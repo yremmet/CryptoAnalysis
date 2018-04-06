@@ -1,14 +1,13 @@
 package crypto.reporting;
 
+import boomerang.BackwardQuery;
+import boomerang.Query;
 import boomerang.WeightedBoomerang;
 import boomerang.jimple.Statement;
 import boomerang.jimple.Val;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Table;
-import crypto.analysis.AnalysisSeedWithSpecification;
-import crypto.analysis.EnsuredCryptSLPredicate;
-import crypto.analysis.IAnalysisSeed;
-import crypto.analysis.ICrySLResultsListener;
+import crypto.analysis.*;
 import crypto.analysis.errors.AbstractError;
 import crypto.interfaces.ISLConstraint;
 import crypto.rules.CryptSLPredicate;
@@ -29,7 +28,7 @@ import java.util.Set;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-public class JSONReporter implements ICrySLResultsListener {
+public class JSONReporter extends CrySLAnalysisListener {
 
 	private static ObjectMapper mapper = new ObjectMapper();
 
@@ -37,11 +36,20 @@ public class JSONReporter implements ICrySLResultsListener {
 
 	private static final String FILE_PREFIX = "Issue_";
 
+	private File reportDir;
+
+	public JSONReporter(String reportDirName){
+	    reportDir = new File (reportDirName);
+	    if (!reportDir.exists() && !reportDir.mkdir()){
+            throw new RuntimeException("Was not able to find or create directory for JSON output!");
+        }
+    }
+
 	@Override
 	public void reportError(AbstractError error) {
 		Issue issue = makeIssueFromError(error);
 
-		String fileName = FILE_PREFIX + issue.hash;
+		String fileName = reportDir.getAbsolutePath().concat(FILE_PREFIX + issue.hash);
 		File reportFile = new File(fileName);
 
 		try(FileWriter writer = new FileWriter(reportFile, true)) {
@@ -99,7 +107,53 @@ public class JSONReporter implements ICrySLResultsListener {
 	public void unevaluableConstraint(AnalysisSeedWithSpecification seed, ISLConstraint con, Statement location) {
 
 	}
-	/**
+
+    @Override
+    public void beforeAnalysis() {
+
+    }
+
+    @Override
+    public void afterAnalysis() {
+
+    }
+
+    @Override
+    public void beforeConstraintCheck(AnalysisSeedWithSpecification analysisSeedWithSpecification) {
+
+    }
+
+    @Override
+    public void afterConstraintCheck(AnalysisSeedWithSpecification analysisSeedWithSpecification) {
+
+    }
+
+    @Override
+    public void beforePredicateCheck(AnalysisSeedWithSpecification analysisSeedWithSpecification) {
+
+    }
+
+    @Override
+    public void afterPredicateCheck(AnalysisSeedWithSpecification analysisSeedWithSpecification) {
+
+    }
+
+    @Override
+    public void seedStarted(IAnalysisSeed analysisSeedWithSpecification) {
+
+    }
+
+    @Override
+    public void boomerangQueryStarted(Query seed, BackwardQuery q) {
+
+    }
+
+    @Override
+    public void boomerangQueryFinished(Query seed, BackwardQuery q) {
+
+    }
+
+    /**
 	 * Class for a single issue, includes converting the issue to json
 	 */
 	public class Issue {

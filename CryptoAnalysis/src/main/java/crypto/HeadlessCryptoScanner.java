@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
+import crypto.reporting.JSONReporter;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.DefaultParser;
@@ -101,12 +102,18 @@ public abstract class HeadlessCryptoScanner {
 			protected String getCSVOutputFile(){
 				return options.getOptionValue("csvReportFile");
 			}
+
+			@Override
+			protected String getJSONOutputDir(){
+				return options.getOptionValue("jsonReportDir");
+			}
 		};
 		sourceCryptoScanner.exec();
 	}
 
 
 	protected abstract String getCSVOutputFile();
+	protected abstract String getJSONOutputDir();
 
 
 	public void exec() {
@@ -194,6 +201,10 @@ public abstract class HeadlessCryptoScanner {
 				String csvOutputFile = getCSVOutputFile();
 				if(csvOutputFile != null){
 					reporter.addReportListener(new CSVReporter(csvOutputFile,softwareIdentifier(),rules,callGraphWatch.elapsed(TimeUnit.MILLISECONDS)));
+				}
+				String jsonReportDir = getJSONOutputDir();
+				if(jsonReportDir != null){
+					reporter.addReportListener(new JSONReporter(jsonReportDir));
 				}
 				scanner.scan();
 			}

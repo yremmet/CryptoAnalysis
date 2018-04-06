@@ -37,6 +37,9 @@ public class HeadlessOptions extends Options {
 		Option csvReportFile = Option.builder().longOpt("csvReportFile").hasArg().desc("Generates a summary of the finding as a CSV file.")
 				.build();
 		addOption(csvReportFile);
+		Option jsonReportDir = Option.builder().longOpt("jsonReportDir").hasArg().desc("Directory in which a seperate JSON file for each error will be generated.")
+				.build();
+		addOption(jsonReportDir);
 	}
 
 }
