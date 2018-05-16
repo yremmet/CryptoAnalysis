@@ -2,13 +2,12 @@ package tests.android;
 
 import android.app.Activity;
 import android.content.Intent;
-import android.widget.Button;
 import android.widget.LinearLayout;
 import org.junit.Test;
+import test.UsagePatternTestingFramework;
 
-import javax.sound.sampled.Line;
 
-public class ActivityTests {
+public class ActivityTests  extends UsagePatternTestingFramework {
 
     @Test
     public void activityTitleTest(){

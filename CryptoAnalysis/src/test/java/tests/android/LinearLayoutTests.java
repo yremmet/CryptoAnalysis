@@ -7,8 +7,9 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.LinearLayout;
 import org.junit.Test;
+import test.UsagePatternTestingFramework;
 
-public class LinearLayoutTests {
+public class LinearLayoutTests  extends UsagePatternTestingFramework {
 
     @Test
     public void linearLayoutAddViewTest(){
@@ -45,7 +46,8 @@ public class LinearLayoutTests {
         layout.setId(customResId);
     }
 
-    @Test void linearLayoutListeners(){
+    @Test
+    public void linearLayoutListeners(){
         Activity context = new Activity();
         LinearLayout layout = new LinearLayout(context);
         layout.setOnClickListener((View view) -> {});

@@ -61,7 +61,8 @@ public class ButtonTests extends UsagePatternTestingFramework{
         button.setText(text.toCharArray(), begin, end);
     }
 
-    @Test void buttonListeners(){
+    @Test
+    public void buttonListeners(){
         Activity context = new Activity();
         Button button = new Button(context);
         button.setOnClickListener((View view) -> {});
