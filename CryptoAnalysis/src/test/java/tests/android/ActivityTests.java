@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.widget.LinearLayout;
 import org.junit.Test;
 import test.UsagePatternTestingFramework;
+import test.assertions.Assertions;
 
 
 public class ActivityTests  extends UsagePatternTestingFramework {
@@ -14,6 +15,7 @@ public class ActivityTests  extends UsagePatternTestingFramework {
         Activity context = new Activity();
         int titleResId = 10;
         context.setTitle(titleResId);
+        Assertions.extValue(0);
     }
 
     @Test
@@ -21,6 +23,7 @@ public class ActivityTests  extends UsagePatternTestingFramework {
         Activity context = new Activity();
         String title = "rajiv";
         context.setTitle(title);
+        Assertions.extValue(0);
     }
 
     @Test
@@ -28,6 +31,7 @@ public class ActivityTests  extends UsagePatternTestingFramework {
         Activity context = new Activity();
         LinearLayout layout = new LinearLayout(context);
         context.setContentView(layout);
+        Assertions.extValue(0);
     }
 
     @Test
@@ -35,6 +39,7 @@ public class ActivityTests  extends UsagePatternTestingFramework {
         Activity context = new Activity();
         int layoutResId = 20;
         context.setContentView(layoutResId);
+        Assertions.extValue(0);
     }
 
     @Test
@@ -42,6 +47,7 @@ public class ActivityTests  extends UsagePatternTestingFramework {
         Activity context = new Activity();
         int viewResId = 30;
         context.findViewById(viewResId);
+        Assertions.extValue(0);
     }
 
     @Test
@@ -49,5 +55,6 @@ public class ActivityTests  extends UsagePatternTestingFramework {
         Activity context = new Activity();
         Intent intent = new Intent();
         context.setIntent(intent);
+        Assertions.extValue(0);
     }
 }
