@@ -14,9 +14,7 @@ import boomerang.jimple.Statement;
 import boomerang.jimple.Val;
 import crypto.analysis.CryptoScanner;
 import crypto.rules.CryptSLMethod;
-import soot.RefType;
-import soot.SootMethod;
-import soot.Unit;
+import soot.*;
 import soot.jimple.AssignStmt;
 import soot.jimple.InstanceInvokeExpr;
 import soot.jimple.InvokeExpr;
@@ -59,11 +57,23 @@ public class FiniteStateMachineToTypestateChangeFunction extends TypeStateMachin
 				AssignStmt as = (AssignStmt) unit;
 				if(as.getRightOp() instanceof NewExpr){
 					NewExpr newExpr = (NewExpr) as.getRightOp();
-					if(analyzedType.contains(newExpr.getType())){
+					Type type = newExpr.getType();
+					// check if there is an immediate super class.
+                    //if(analyzedType.contains(type) || analyzedType.contains(((RefType)type).getSootClass().getSuperclass().getType())){
+					if(analyzedType.contains(type)){
 						AssignStmt stmt = (AssignStmt) unit;
 						out.add(createQuery(unit,method,new AllocVal(stmt.getLeftOp(), method, as.getRightOp())));
 					}
-				}
+                    for (RefType refType : analyzedType) {
+					    // it seems classes are sub-classes to themselves
+                        if(!(refType.getSootClass().equals(((RefType)type).getSootClass())) &&  Scene.v().getFastHierarchy().isSubclass(((RefType)type).getSootClass(),refType.getSootClass())){
+                            //generate the current statement as a seed, because you want to track this object.
+                            AssignStmt stmt = (AssignStmt) unit;
+                            out.add(createQuery(unit,method,new AllocVal(stmt.getLeftOp(), method, as.getRightOp())));
+                        }
+                    }
+
+                }
 			}
 		}
 		if (!(unit instanceof Stmt) || !((Stmt) unit).containsInvokeExpr())
