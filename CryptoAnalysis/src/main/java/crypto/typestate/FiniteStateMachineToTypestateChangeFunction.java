@@ -24,7 +24,7 @@ import typestate.finiteautomata.TypeStateMachineWeightFunctions;
 
 public class FiniteStateMachineToTypestateChangeFunction extends TypeStateMachineWeightFunctions {
 
-	private Collection<RefType> analyzedType = Sets.newHashSet();
+	private RefType analyzedType = null;
 
 	private SootBasedStateMachineGraph fsm;
 
@@ -34,7 +34,19 @@ public class FiniteStateMachineToTypestateChangeFunction extends TypeStateMachin
 		}
 		for(SootMethod m : fsm.initialTransitonLabel()){
 			if(m.isConstructor()){
-				analyzedType.add(m.getDeclaringClass().getType());
+				if (analyzedType == null){
+					analyzedType = m.getDeclaringClass().getType();
+				} else {
+					// This code was added to detect unidentified outlying cases affected by the changes made for issue #47.
+					if (analyzedType != m.getDeclaringClass().getType()){
+
+                        try {
+                            throw new Exception("The type of m.getDeclaringClass() does not appear to be consistent across fsm.initialTransitonLabel().");
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                    }
+				}
 			}
 		}
 		this.fsm = fsm;
