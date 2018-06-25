@@ -9,12 +9,11 @@ import com.beust.jcommander.internal.Lists;
 import com.beust.jcommander.internal.Sets;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
-import com.google.common.collect.Table;
-import com.google.common.collect.Table.Cell;
 
 import boomerang.BackwardQuery;
 import boomerang.Boomerang;
 import boomerang.ForwardQuery;
+import boomerang.jimple.AllocVal;
 import boomerang.jimple.Statement;
 import boomerang.jimple.Val;
 import boomerang.results.BackwardBoomerangResults;
@@ -25,7 +24,6 @@ import crypto.typestate.CryptSLMethodToSootMethod;
 import crypto.typestate.LabeledMatcherTransition;
 import crypto.typestate.SootBasedStateMachineGraph;
 import heros.utilities.DefaultValueMap;
-import java_cup.symbol_set;
 import soot.Local;
 import soot.SootMethod;
 import soot.Unit;
@@ -39,7 +37,7 @@ public class ExtractParameterAnalysis {
 	private Map<Statement,SootMethod> allCallsOnObject;
 	private Collection<LabeledMatcherTransition> events = Sets.newHashSet();
 	private CryptoScanner cryptoScanner;
-	private Multimap<CallSiteWithParamIndex, Statement> collectedValues = HashMultimap.create();
+	private Multimap<CallSiteWithParamIndex, ExtractedValue> collectedValues = HashMultimap.create();
 	private DefaultValueMap<AdditionalBoomerangQuery, AdditionalBoomerangQuery> additionalBoomerangQuery = new DefaultValueMap<AdditionalBoomerangQuery, AdditionalBoomerangQuery>() {
 		@Override
 		protected AdditionalBoomerangQuery createItem(AdditionalBoomerangQuery key) {
@@ -79,7 +77,7 @@ public class ExtractParameterAnalysis {
 //			}
 		}
 	}
-	public Multimap<CallSiteWithParamIndex, Statement> getCollectedValues() {
+	public Multimap<CallSiteWithParamIndex, ExtractedValue> getCollectedValues() {
 		return collectedValues;
 	}
 	private void injectQueryAtCallSite(List<CryptSLMethod> list, Statement callSite) {
@@ -112,17 +110,25 @@ public class ExtractParameterAnalysis {
 		Value parameter = stmt.getUnit().get().getInvokeExpr().getArg(index);
 		if (!(parameter instanceof Local)) {
 			collectedValues.put(
-					new CallSiteWithParamIndex(stmt, new Val(parameter, stmt.getMethod()), index, varNameInSpecification), stmt);
+					new CallSiteWithParamIndex(stmt, new Val(parameter, stmt.getMethod()), index, varNameInSpecification), new ExtractedValue(stmt,parameter));
 			return;
 		}
+		Val queryVal = new Val((Local) parameter, stmt.getMethod());
 		AdditionalBoomerangQuery query = additionalBoomerangQuery
-				.getOrCreate(new AdditionalBoomerangQuery(stmt, new Val((Local) parameter, stmt.getMethod())));
+				.getOrCreate(new AdditionalBoomerangQuery(stmt, queryVal));
 		query.addListener(new QueryListener() {
 			@Override
 			public void solved(AdditionalBoomerangQuery q, BackwardBoomerangResults<NoWeight> res) {
 				for (ForwardQuery v : res.getAllocationSites().keySet()) {
-					collectedValues.put(new CallSiteWithParamIndex(stmt, v.var(), index, varNameInSpecification),
-							v.stmt());
+					ExtractedValue extractedValue = null;
+					if(v.var() instanceof AllocVal) {
+						AllocVal allocVal = (AllocVal) v.var();
+						extractedValue = new ExtractedValue(allocVal.allocationStatement(),allocVal.allocationValue());
+					} else {
+						extractedValue = new ExtractedValue(v.stmt(),v.var().value());
+					}
+					collectedValues.put(new CallSiteWithParamIndex(stmt, queryVal, index, varNameInSpecification),
+							extractedValue);
 				}
 			}
 		});

@@ -2,7 +2,6 @@ package test.headless;
 
 import java.io.File;
 import java.util.Collection;
-import java.util.Map.Entry;
 import java.util.Set;
 
 import org.junit.Before;
@@ -15,7 +14,6 @@ import com.google.common.collect.Table.Cell;
 
 import boomerang.BackwardQuery;
 import boomerang.Query;
-import boomerang.WeightedBoomerang;
 import boomerang.jimple.Statement;
 import boomerang.jimple.Val;
 import boomerang.results.ForwardBoomerangResults;
@@ -26,10 +24,13 @@ import crypto.analysis.EnsuredCryptSLPredicate;
 import crypto.analysis.IAnalysisSeed;
 import crypto.analysis.errors.AbstractError;
 import crypto.analysis.errors.ConstraintError;
+import crypto.analysis.errors.ImpreciseValueExtractionError;
 import crypto.analysis.errors.IncompleteOperationError;
+import crypto.analysis.errors.NeverTypeOfError;
 import crypto.analysis.errors.RequiredPredicateError;
 import crypto.analysis.errors.TypestateError;
 import crypto.extractparameter.CallSiteWithParamIndex;
+import crypto.extractparameter.ExtractedValue;
 import crypto.interfaces.ISLConstraint;
 import crypto.rules.CryptSLPredicate;
 import sync.pds.solver.nodes.Node;
@@ -37,18 +38,51 @@ import test.IDEALCrossingTestingFramework;
 import typestate.TransitionFunction;
 
 public class HeadlessTests {
+	
+	private static boolean VISUALIZATION = false;
 	private CrySLAnalysisListener errorCountingAnalysisListener;
 	private Table<String, Class<?>, Integer> errorMarkerCountPerErrorTypeAndMethod = HashBasedTable.create();
 
 	@Test
+	public void cogniCryptDemoExamples() {
+		String sootClassPath = new File("../CryptoAnalysisTargets/CogniCryptDemoExample/bin").getAbsolutePath();
+		HeadlessCryptoScanner scanner = createAnalysisFor(sootClassPath, sootClassPath);
+
+		setErrorsCount("<example.ConstraintErrorExample: void main(java.lang.String[])>", ConstraintError.class, 1);
+		
+		setErrorsCount("<example.PredicateMissingExample: void main(java.lang.String[])>", RequiredPredicateError.class, 1);
+		setErrorsCount("<example.PredicateMissingExample: void main(java.lang.String[])>", ConstraintError.class, 1);
+		
+		setErrorsCount("<example.TypestateErrorExample: void main(java.lang.String[])>", TypestateError.class, 1);
+
+		setErrorsCount("<example.IncompleOperationErrorExample: void main(java.lang.String[])>", IncompleteOperationError.class, 2);
+		
+		setErrorsCount("<example.ImpreciseValueExtractionErrorExample: void main(java.lang.String[])>", ImpreciseValueExtractionError.class, 2);
+
+		scanner.exec();
+		assertErrors();
+	}
+	
+	@Test
 	public void oracleExample() {
 		String sootClassPath = new File("../CryptoAnalysisTargets/OracleExample/bin").getAbsolutePath();
 		HeadlessCryptoScanner scanner = createAnalysisFor(sootClassPath, sootClassPath);
-
+//
 		setErrorsCount("<main.Main: void main(java.lang.String[])>", ConstraintError.class, 1);
 		setErrorsCount("<main.Main: void main(java.lang.String[])>", TypestateError.class, 1);
 		setErrorsCount("<main.Main: void main(java.lang.String[])>", RequiredPredicateError.class, 1);
-		setErrorsCount("<main.Main: void keyStoreExample()>", ConstraintError.class, 1);
+		setErrorsCount("<main.Main: void keyStoreExample()>", NeverTypeOfError.class, 1);
+		setErrorsCount("<main.Main: void cipherUsageExample()>", ConstraintError.class, 1);
+		
+		setErrorsCount("<main.Main: void use(javax.crypto.Cipher)>", TypestateError.class, 1);
+
+
+		//TODO this is a spurious finding. What happens here?
+		setErrorsCount("<Crypto.PWHasher: java.lang.Boolean verifyPWHash(char[],java.lang.String)>", RequiredPredicateError.class, 1);
+		
+
+		setErrorsCount("<main.Main: void incorrectKeyForWrongCipher()>", ConstraintError.class, 1);
+		setErrorsCount("<main.Main: void incorrectKeyForWrongCipher()>", RequiredPredicateError.class, 1);
 
 		scanner.exec();
 		assertErrors();
@@ -71,6 +105,23 @@ public class HeadlessTests {
 
 	}
 	
+	@Test
+	public void cryptoMisuseExampleProject() {
+		String sootClassPath = new File("../CryptoAnalysisTargets/CryptoMisuseExamples/bin").getAbsolutePath();
+		HeadlessCryptoScanner scanner = createAnalysisFor(sootClassPath, sootClassPath);
+
+
+		setErrorsCount("<main.Msg: byte[] sign(java.lang.String)>", ConstraintError.class, 1);
+		setErrorsCount("<main.Msg: byte[] sign(java.lang.String)>", RequiredPredicateError.class, 1);
+		setErrorsCount("<main.Msg: java.security.PrivateKey getPrivateKey()>", ConstraintError.class, 1);
+		
+		setErrorsCount("<main.Msg: void encryptAlgFromField()>", ConstraintError.class, 1);
+		setErrorsCount("<main.Msg: void encrypt()>", ConstraintError.class, 1);
+		setErrorsCount("<main.Msg: void encryptAlgFromVar()>", ConstraintError.class, 1);
+		
+		scanner.exec();
+		assertErrors();
+	}
 
 	@Test
 	public void stopwatchPathExpressionExample() {
@@ -89,6 +140,19 @@ public class HeadlessTests {
 
 	}
 
+
+	@Test
+	public void glassfishExample() {
+		String sootClassPath = new File("../CryptoAnalysisTargets/glassfish-embedded/bin").getAbsolutePath();
+		HeadlessCryptoScanner scanner = createAnalysisFor(sootClassPath, sootClassPath);
+
+		setErrorsCount("<org.glassfish.grizzly.config.ssl.CustomClass: void init(javax.crypto.SecretKey,java.lang.String)>", ConstraintError.class, 1);
+		setErrorsCount("<org.glassfish.grizzly.config.ssl.JSSESocketFactory: java.security.KeyStore getStore(java.lang.String,java.lang.String,java.lang.String)>", NeverTypeOfError.class, 1);
+
+		scanner.exec();
+		assertErrors();
+	}
+	
 	private HeadlessCryptoScanner createAnalysisFor(String applicationClassPath, String sootClassPath) {
 		return createAnalysisFor(applicationClassPath, sootClassPath,
 				new File(IDEALCrossingTestingFramework.RESOURCE_PATH).getAbsolutePath());
@@ -97,11 +161,6 @@ public class HeadlessTests {
 	private HeadlessCryptoScanner createAnalysisFor(String applicationClassPath, String sootClassPath,
 			String rulesDir) {
 		HeadlessCryptoScanner scanner = new HeadlessCryptoScanner() {
-			@Override
-			protected String getCSVOutputFile() {
-				return null;
-			}
-
 			@Override
 			protected String getRulesDirectory() {
 				return rulesDir;
@@ -118,18 +177,19 @@ public class HeadlessTests {
 			}
 
 			@Override
-			protected String softwareIdentifier() {
-				return "";
-			}
-
-			@Override
-			protected String getOutputFile() {
-				return null;
-			}
-
-			@Override
 			protected CrySLAnalysisListener getAdditionalListener() {
 				return errorCountingAnalysisListener;
+			}
+			@Override
+			protected String getOutputFolder() {
+				File file = new File("cognicrypt-output/");
+				file.mkdirs();
+				return VISUALIZATION ? file.getAbsolutePath() : super.getOutputFolder();
+			}
+			
+			@Override
+			protected boolean enableVisualization() {
+				return VISUALIZATION;
 			}
 		};
 		return scanner;
@@ -138,11 +198,6 @@ public class HeadlessTests {
 	@Before
 	public void setup() {
 		errorCountingAnalysisListener = new CrySLAnalysisListener() {
-			@Override
-			public void unevaluableConstraint(AnalysisSeedWithSpecification seed, ISLConstraint con,
-					Statement location) {
-			}
-
 			@Override
 			public void reportError(AbstractError error) {
 				Integer currCount; 
@@ -153,14 +208,10 @@ public class HeadlessTests {
 					currCount = errorMarkerCountPerErrorTypeAndMethod
 							.get(error.getErrorLocation().getMethod().toString(), error.getClass());
 				}
+				System.out.println(error.getErrorLocation().getMethod() + "  "+error);
 				Integer newCount = --currCount;
 				errorMarkerCountPerErrorTypeAndMethod.put(error.getErrorLocation().getMethod().toString(),
 						error.getClass(), newCount);
-			}
-
-			@Override
-			public void predicateContradiction(Node<Statement, Val> node,
-					Entry<CryptSLPredicate, CryptSLPredicate> disPair) {
 			}
 
 			@Override
@@ -185,7 +236,7 @@ public class HeadlessTests {
 
 			@Override
 			public void collectedValues(AnalysisSeedWithSpecification seed,
-					Multimap<CallSiteWithParamIndex, Statement> collectedValues) {
+					Multimap<CallSiteWithParamIndex, ExtractedValue> collectedValues) {
 			}
 
 			@Override

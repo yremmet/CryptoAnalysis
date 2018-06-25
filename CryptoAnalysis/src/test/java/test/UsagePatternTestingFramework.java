@@ -6,7 +6,6 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 
 import com.beust.jcommander.internal.Sets;
@@ -18,7 +17,6 @@ import com.google.common.collect.Table.Cell;
 
 import boomerang.BackwardQuery;
 import boomerang.Query;
-import boomerang.WeightedBoomerang;
 import boomerang.jimple.Statement;
 import boomerang.jimple.Val;
 import boomerang.results.ForwardBoomerangResults;
@@ -35,9 +33,12 @@ import crypto.analysis.errors.ErrorVisitor;
 import crypto.analysis.errors.ForbiddenMethodError;
 import crypto.analysis.errors.ImpreciseValueExtractionError;
 import crypto.analysis.errors.IncompleteOperationError;
+import crypto.analysis.errors.NeverTypeOfError;
+import crypto.analysis.errors.PredicateContradictionError;
 import crypto.analysis.errors.RequiredPredicateError;
 import crypto.analysis.errors.TypestateError;
 import crypto.extractparameter.CallSiteWithParamIndex;
+import crypto.extractparameter.ExtractedValue;
 import crypto.interfaces.ISLConstraint;
 import crypto.rules.CryptSLPredicate;
 import crypto.rules.CryptSLRule;
@@ -106,7 +107,7 @@ public abstract class UsagePatternTestingFramework extends AbstractTestingFramew
 
 							@Override
 							public void collectedValues(AnalysisSeedWithSpecification seed,
-									Multimap<CallSiteWithParamIndex, Statement> collectedValues) {
+									Multimap<CallSiteWithParamIndex, ExtractedValue> collectedValues) {
 								for(Assertion a : expectedResults){
 									if(a instanceof ExtractedValueAssertion){
 										((ExtractedValueAssertion) a).computedValues(collectedValues);
@@ -184,6 +185,22 @@ public abstract class UsagePatternTestingFramework extends AbstractTestingFramew
 									public void visit(ImpreciseValueExtractionError predicateError) {
 
 									}
+
+									@Override
+									public void visit(NeverTypeOfError predicateError) {
+										// TODO Auto-generated method stub
+										
+									}
+
+									@Override
+									public void visit(PredicateContradictionError predicateContradictionError) {
+										for (Assertion e : expectedResults) {
+											if (e instanceof PredicateContradiction) {
+												PredicateContradiction p = (PredicateContradiction) e;
+												p.trigger();
+											}
+										}
+									}
 								});
 							}
 
@@ -233,16 +250,6 @@ public abstract class UsagePatternTestingFramework extends AbstractTestingFramew
 								
 							}
 
-							@Override
-							public void predicateContradiction(Node<Statement, Val> node,
-									Entry<CryptSLPredicate, CryptSLPredicate> disPair) {
-								for(Assertion e : expectedResults){
-									if(e instanceof PredicateContradiction){
-										PredicateContradiction p = (PredicateContradiction) e;
-										p.trigger();
-									}
-								}
-							}
 
 							@Override
 							public void checkedConstraints(AnalysisSeedWithSpecification analysisSeedWithSpecification,
@@ -290,13 +297,6 @@ public abstract class UsagePatternTestingFramework extends AbstractTestingFramew
 							public void onSeedTimeout(Node<Statement, Val> seed) {
 								
 							}
-
-							@Override
-							public void unevaluableConstraint(AnalysisSeedWithSpecification seed, ISLConstraint con, Statement location) {
-								System.out.print(con.getName());
-								System.out.println(" not evaluable.");
-							}
-
 							
 
 						};

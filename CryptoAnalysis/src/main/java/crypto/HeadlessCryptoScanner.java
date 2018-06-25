@@ -15,14 +15,19 @@ import org.apache.commons.cli.ParseException;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.Lists;
 
+import boomerang.debugger.Debugger;
+import boomerang.debugger.IDEVizDebugger;
+import boomerang.preanalysis.PreTransformBodies;
 import crypto.analysis.CrySLAnalysisListener;
 import crypto.analysis.CrySLResultsReporter;
 import crypto.analysis.CryptoScanner;
+import crypto.analysis.IAnalysisSeed;
 import crypto.preanalysis.SeedFactory;
 import crypto.reporting.CSVReporter;
 import crypto.reporting.CommandLineReporter;
 import crypto.rules.CryptSLRule;
 import crypto.rules.CryptSLRuleReader;
+import ideal.IDEALSeedSolver;
 import soot.Body;
 import soot.BodyTransformer;
 import soot.G;
@@ -30,7 +35,6 @@ import soot.PackManager;
 import soot.PhaseOptions;
 import soot.Scene;
 import soot.SceneTransformer;
-import soot.SootClass;
 import soot.SootMethod;
 import soot.Transform;
 import soot.Transformer;
@@ -38,6 +42,7 @@ import soot.Unit;
 import soot.jimple.toolkits.ide.icfg.BiDiInterproceduralCFG;
 import soot.jimple.toolkits.ide.icfg.JimpleBasedInterproceduralCFG;
 import soot.options.Options;
+import typestate.TransitionFunction;
 
 public abstract class HeadlessCryptoScanner {
 	private boolean hasSeeds;
@@ -56,7 +61,7 @@ public abstract class HeadlessCryptoScanner {
 
 	public static HeadlessCryptoScanner createFromOptions(String... args) throws ParseException{
 		CommandLineParser parser = new DefaultParser();
-		options = parser.parse(new HeadlessOptions(), args);
+		options = parser.parse(new HeadlessCryptoScannerOptions(), args);
 		final String resourcesPath;
 		if (options.hasOption("rulesDir"))
 			resourcesPath = options.getOptionValue("rulesDir");
@@ -80,7 +85,7 @@ public abstract class HeadlessCryptoScanner {
 
 			@Override
 			protected String sootClassPath() {
-				return options.getOptionValue("sootCp");
+				return options.hasOption("sootCp") ? options.getOptionValue("sootCp") : "";
 			}
 
 			@Override
@@ -104,21 +109,27 @@ public abstract class HeadlessCryptoScanner {
 			}
 			
 			@Override
-			protected String getOutputFile(){
-				return options.getOptionValue("reportFile");
+			protected String getOutputFolder(){
+				return options.getOptionValue("reportDir");
 			}
 
 			@Override
 			protected String getCSVOutputFile(){
 				return options.getOptionValue("csvReportFile");
 			}
+			
+			@Override
+			protected boolean enableVisualization(){
+				return options.hasOption("visualization");
+			}
 		};
 		return sourceCryptoScanner;
 	}
 	
 
-
-	protected abstract String getCSVOutputFile();
+	protected String getCSVOutputFile(){
+		return null;
+	}
 
 
 	public void exec() {
@@ -163,6 +174,7 @@ public abstract class HeadlessCryptoScanner {
 	}
 
 	private void analyse() {
+		PackManager.v().getPack("wjtp").add(new Transform("wjtp.prepare", new PreTransformBodies()));
 		Transform transform = new Transform("wjtp.ifds", createAnalysisTransformer());
 		PackManager.v().getPack("wjtp").add(transform);
 		callGraphWatch = Stopwatch.createStarted();        
@@ -187,7 +199,7 @@ public abstract class HeadlessCryptoScanner {
 			protected void internalTransform(String phaseName, Map<String, String> options) {
 				final JimpleBasedInterproceduralCFG icfg = new JimpleBasedInterproceduralCFG(false);
 				List<CryptSLRule> rules = HeadlessCryptoScanner.this.getRules();
-				CommandLineReporter fileReporter = new CommandLineReporter(getOutputFile(), rules);
+				CommandLineReporter fileReporter = new CommandLineReporter(getOutputFolder(), rules);
 
 				final CrySLResultsReporter reporter = new CrySLResultsReporter();
 				if(getAdditionalListener() != null)
@@ -203,12 +215,19 @@ public abstract class HeadlessCryptoScanner {
 					public CrySLResultsReporter getAnalysisListener() {
 						return reporter;
 					}
-
-					// @Override
-					// public IDebugger<TypestateDomainValue<StateNode>>
-					// debugger() {
-					// return new NullDebugger<>();
-					// }
+					
+					@Override
+					public Debugger<TransitionFunction> debugger(IDEALSeedSolver<TransitionFunction> solver, IAnalysisSeed seed) {
+						if(enableVisualization()) {
+							if(getOutputFolder() == null) {
+								throw new RuntimeException("The visualization requires the option --reportFolder");
+							}
+							File vizFile = new File(getOutputFolder()+"/viz/ObjectId#"+seed.getObjectId()+".json");
+							vizFile.getParentFile().mkdirs();
+							return new IDEVizDebugger<>(vizFile, icfg());
+						}
+						return super.debugger(solver, seed);
+					}
 
 					@Override
 					public boolean isCommandLineMode() {
@@ -273,9 +292,8 @@ public abstract class HeadlessCryptoScanner {
 		Options.v().set_output_format(Options.output_format_none);
 		Options.v().set_no_bodies_for_excluded(true);
 		Options.v().set_allow_phantom_refs(true);
-
+		Options.v().set_keep_line_number(true);
 		Options.v().set_prepend_classpath(true);
-		System.out.println((sootClassPath() + File.pathSeparator + pathToJCE()));
 		Options.v().set_soot_classpath(sootClassPath() + File.pathSeparator + pathToJCE());
 		Options.v().set_process_dir(Arrays.asList(applicationClassPath().split(File.pathSeparator)));
 		Options.v().set_include(getIncludeList());
@@ -314,14 +332,24 @@ public abstract class HeadlessCryptoScanner {
 		return CG.CHA;
 	}
 
-	protected abstract String sootClassPath();
+	protected String sootClassPath() {
+		return "";
+	}
 
 	protected abstract String applicationClassPath();
 
-	protected abstract String softwareIdentifier();
+	protected String softwareIdentifier(){
+		return "";
+	};
 	
-	protected abstract String getOutputFile();
+	protected String getOutputFolder(){
+		return null;
+	};
+	
 
+	protected boolean enableVisualization(){
+		return false;
+	};
 	
 	private static String pathToJCE() {
 		// When whole program mode is disabled, the classpath misses jce.jar

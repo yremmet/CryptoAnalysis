@@ -2,8 +2,6 @@ package crypto.typestate;
 
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.List;
-import java.util.Map.Entry;
 import java.util.Set;
 
 import com.google.common.collect.Sets;
@@ -11,18 +9,17 @@ import com.google.common.collect.Sets;
 import boomerang.WeightedForwardQuery;
 import boomerang.jimple.AllocVal;
 import boomerang.jimple.Statement;
-import boomerang.jimple.Val;
 import crypto.analysis.CryptoScanner;
+import soot.RefType;
+import soot.SootMethod;
+import soot.Unit;
 import crypto.rules.CryptSLMethod;
-import soot.*;
 import soot.jimple.AssignStmt;
 import soot.jimple.InstanceInvokeExpr;
 import soot.jimple.InvokeExpr;
 import soot.jimple.NewExpr;
 import soot.jimple.Stmt;
-import sync.pds.solver.nodes.Node;
 import typestate.TransitionFunction;
-import typestate.finiteautomata.ITransition;
 import typestate.finiteautomata.MatcherTransition;
 import typestate.finiteautomata.State;
 import typestate.finiteautomata.TypeStateMachineWeightFunctions;
@@ -62,7 +59,7 @@ public class FiniteStateMachineToTypestateChangeFunction extends TypeStateMachin
                     //if(analyzedType.contains(type) || analyzedType.contains(((RefType)type).getSootClass().getSuperclass().getType())){
 					if(analyzedType.contains(type)){
 						AssignStmt stmt = (AssignStmt) unit;
-						out.add(createQuery(unit,method,new AllocVal(stmt.getLeftOp(), method, as.getRightOp())));
+						out.add(createQuery(unit,method,new AllocVal(stmt.getLeftOp(), method, as.getRightOp(), new Statement(stmt, method))));
 					}
                     for (RefType refType : analyzedType) {
 					    // it seems classes are sub-classes to themselves
@@ -85,11 +82,11 @@ public class FiniteStateMachineToTypestateChangeFunction extends TypeStateMachin
 		if (calledMethod.isStatic()) {
 			if(unit instanceof AssignStmt){
 				AssignStmt stmt = (AssignStmt) unit;
-				out.add(createQuery(stmt,method,new AllocVal(stmt.getLeftOp(), method, stmt.getRightOp())));
+				out.add(createQuery(stmt,method,new AllocVal(stmt.getLeftOp(), method, stmt.getRightOp(), new Statement(stmt,method))));
 			}
 		} else if (invokeExpr instanceof InstanceInvokeExpr){
 			InstanceInvokeExpr iie = (InstanceInvokeExpr) invokeExpr;
-			out.add(createQuery(unit,method,new AllocVal(iie.getBase(), method,iie)));
+			out.add(createQuery(unit,method,new AllocVal(iie.getBase(), method,iie, new Statement((Stmt) unit,method))));
 		}
 		return out;
 	}

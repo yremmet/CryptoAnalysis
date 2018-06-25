@@ -23,7 +23,6 @@ import com.google.common.collect.Table.Cell;
 
 import boomerang.BackwardQuery;
 import boomerang.Query;
-import boomerang.WeightedBoomerang;
 import boomerang.jimple.Statement;
 import boomerang.jimple.Val;
 import boomerang.results.ForwardBoomerangResults;
@@ -39,6 +38,7 @@ import crypto.analysis.errors.IncompleteOperationError;
 import crypto.analysis.errors.RequiredPredicateError;
 import crypto.analysis.errors.TypestateError;
 import crypto.extractparameter.CallSiteWithParamIndex;
+import crypto.extractparameter.ExtractedValue;
 import crypto.interfaces.ISLConstraint;
 import crypto.rules.CryptSLPredicate;
 import crypto.rules.CryptSLRule;
@@ -236,14 +236,8 @@ public class CSVReporter extends CrySLAnalysisListener {
 	}
 
 	@Override
-	public void predicateContradiction(Node<Statement, Val> node, Entry<CryptSLPredicate, CryptSLPredicate> disPair) {
-		
-	}
-
-	@Override
 	public void checkedConstraints(AnalysisSeedWithSpecification analysisSeedWithSpecification,
 			Collection<ISLConstraint> relConstraints) {
-		
 	}
 
 	@Override
@@ -259,18 +253,13 @@ public class CSVReporter extends CrySLAnalysisListener {
 
 	@Override
 	public void collectedValues(AnalysisSeedWithSpecification seed,
-			Multimap<CallSiteWithParamIndex, Statement> collectedValues) {
+			Multimap<CallSiteWithParamIndex, ExtractedValue> collectedValues) {
 		
 	}
 
 	@Override
 	public void discoveredSeed(IAnalysisSeed curr) {
 		seeds++;
-	}
-
-	@Override
-	public void unevaluableConstraint(AnalysisSeedWithSpecification seed, ISLConstraint con, Statement location) {
-		
 	}
 
 }

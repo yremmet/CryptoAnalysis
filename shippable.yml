@@ -11,9 +11,9 @@ git:
 build:
   ci:
    - cd CryptoAnalysis
-   - git clone https://github.com/CROSSINGTUD/WPDS.git WeightedBoomerang
-   - git clone https://github.com/johspaeth/soot-infoflow.git 
-   - git clone https://github.com/johspaeth/soot-infoflow-android.git
-   - git submodule update --init --recursive && \
+   - git clone --recurse-submodules https://github.com/CROSSINGTUD/WPDS.git
+   - cd WPDS
+   - mvn clean install -DskipTests
+   - cd ..
    - git checkout $NIGHTLYBUILD
    - mvn clean verify surefire:test --fail-at-end
