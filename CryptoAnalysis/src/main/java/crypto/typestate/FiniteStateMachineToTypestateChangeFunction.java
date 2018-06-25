@@ -10,9 +10,7 @@ import boomerang.WeightedForwardQuery;
 import boomerang.jimple.AllocVal;
 import boomerang.jimple.Statement;
 import crypto.analysis.CryptoScanner;
-import soot.RefType;
-import soot.SootMethod;
-import soot.Unit;
+import soot.*;
 import crypto.rules.CryptSLMethod;
 import soot.jimple.AssignStmt;
 import soot.jimple.InstanceInvokeExpr;
@@ -66,7 +64,7 @@ public class FiniteStateMachineToTypestateChangeFunction extends TypeStateMachin
                         if(!(refType.getSootClass().equals(((RefType)type).getSootClass())) &&  Scene.v().getFastHierarchy().isSubclass(((RefType)type).getSootClass(),refType.getSootClass())){
                             //generate the current statement as a seed, because you want to track this object.
                             AssignStmt stmt = (AssignStmt) unit;
-                            out.add(createQuery(unit,method,new AllocVal(stmt.getLeftOp(), method, as.getRightOp())));
+                            out.add(createQuery(unit,method,new AllocVal(stmt.getLeftOp(), method, as.getRightOp(), new Statement(stmt, method))));
                         }
                     }
 
