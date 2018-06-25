@@ -53,18 +53,28 @@ public class FiniteStateMachineToTypestateChangeFunction extends TypeStateMachin
 				if(as.getRightOp() instanceof NewExpr){
 					NewExpr newExpr = (NewExpr) as.getRightOp();
 					Type type = newExpr.getType();
-					// check if there is an immediate super class.
-                    //if(analyzedType.contains(type) || analyzedType.contains(((RefType)type).getSootClass().getSuperclass().getType())){
+
 					if(analyzedType.contains(type)){
 						AssignStmt stmt = (AssignStmt) unit;
 						out.add(createQuery(unit,method,new AllocVal(stmt.getLeftOp(), method, as.getRightOp(), new Statement(stmt, method))));
 					}
+                    SootClass classUnderConsideration = ((RefType)type).getSootClass();
                     for (RefType refType : analyzedType) {
 					    // it seems classes are sub-classes to themselves
-                        if(!(refType.getSootClass().equals(((RefType)type).getSootClass())) &&  Scene.v().getFastHierarchy().isSubclass(((RefType)type).getSootClass(),refType.getSootClass())){
+                        if(!(refType.getSootClass().equals(((RefType)type).getSootClass())) &&  Scene.v().getFastHierarchy().isSubclass(classUnderConsideration,refType.getSootClass())){
                             //generate the current statement as a seed, because you want to track this object.
                             AssignStmt stmt = (AssignStmt) unit;
                             out.add(createQuery(unit,method,new AllocVal(stmt.getLeftOp(), method, as.getRightOp(), new Statement(stmt, method))));
+                        } else{
+                            while(classUnderConsideration != null){
+                                classUnderConsideration = ((RefType)type).getSootClass().getSuperclass();
+                                if(!(refType.getSootClass().equals(((RefType)type).getSootClass())) &&  Scene.v().getFastHierarchy().isSubclass(classUnderConsideration,refType.getSootClass())){
+                                    //generate the current statement as a seed, because you want to track this object.
+                                    AssignStmt stmt = (AssignStmt) unit;
+                                    out.add(createQuery(unit,method,new AllocVal(stmt.getLeftOp(), method, as.getRightOp(), new Statement(stmt, method))));
+                                    break;
+                                }
+                            }
                         }
                     }
 
