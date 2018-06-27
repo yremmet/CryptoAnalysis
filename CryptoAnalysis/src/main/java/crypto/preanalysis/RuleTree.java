@@ -68,9 +68,8 @@ public class RuleTree {
     }
 
     // recursive
-    public void insertNode(TreeNode<ClassSpecification> nodeUnderConsideration, TreeNode<ClassSpecification> rootNode){
-
-        
+    public boolean insertNode(TreeNode<ClassSpecification> nodeUnderConsideration, TreeNode<ClassSpecification> rootNode){
+        boolean successfulInsertion = false; // to stop duplicates after tree parsing if one of the children has a successful insert.
         String nodeUnderConsiderationClassFullyQualifiedName = Utils.getFullyQualifiedName(nodeUnderConsideration.data.getRule());
         String rootNodeClassFullyQualifiedName = Utils.getFullyQualifiedName(rootNode.data.getRule());
 
@@ -82,11 +81,14 @@ public class RuleTree {
                 // recursive, if the current class specification is the sub class of the current node then go through the children.
                 if (Scene.v().getFastHierarchy().isSubclass(Scene.v().getSootClass(nodeUnderConsiderationClassFullyQualifiedName),Scene.v().getSootClass(rootNodeClassFullyQualifiedName))){
                     for (TreeNode<ClassSpecification> child : rootNode.children) {
-                        insertNode(nodeUnderConsideration, child);
+                        successfulInsertion = insertNode(nodeUnderConsideration, child);
                     }
-                    //TODO this line should not be hit if one if the children is the super class. Duplicate addition in this case.
-                    // after traversal through the tree, if return is not hit, add the node as a child.
-                    rootNode.addChild(nodeUnderConsideration.data);
+                    // after traversal through the children, if insertion is unsuccessful, or if there are no children, add the node as a child.
+                    if(!successfulInsertion){
+                        rootNode.addChild(nodeUnderConsideration.data);
+                        successfulInsertion = true;
+                    }
+
 
                 }// if the above check is not true, check if the hierarchy is the other way around.
                 else if(Scene.v().getFastHierarchy().isSubclass(Scene.v().getSootClass(rootNodeClassFullyQualifiedName), Scene.v().getSootClass(nodeUnderConsiderationClassFullyQualifiedName))){
@@ -95,19 +97,22 @@ public class RuleTree {
                     rootNode.parent.children.remove(rootNode);
                     // If the switched node has children, go through them the same way as the forward scenario.
                     for (TreeNode<ClassSpecification> child : nodeUnderConsideration.children) {
-                        insertNode(child, nodeUnderConsideration);
+                        successfulInsertion = insertNode(child, nodeUnderConsideration);
                     }
-                    nodeUnderConsideration.addChild(rootNode.data);
+                    if(!successfulInsertion){
+                        nodeUnderConsideration.addChild(rootNode.data);
+                        successfulInsertion = true;
+                    }
+
                 } else {
-                    return;
+                    return false;
                 }
             }
         }
 
 
 
-
-
+        return successfulInsertion;
 
 
         // get the subclasses of the rule of the node under consideration on the tree.
