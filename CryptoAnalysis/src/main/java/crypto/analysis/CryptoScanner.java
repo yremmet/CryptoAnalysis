@@ -13,6 +13,8 @@ import boomerang.Query;
 import boomerang.debugger.Debugger;
 import boomerang.jimple.Statement;
 import boomerang.jimple.Val;
+import crypto.preanalysis.RuleTree;
+import crypto.preanalysis.TreeNode;
 import crypto.predicates.PredicateHandler;
 import crypto.rules.CryptSLRule;
 import crypto.typestate.CryptSLMethodToSootMethod;
@@ -65,6 +67,9 @@ public abstract class CryptoScanner {
 		for (CryptSLRule rule : specs) {
 			specifications.add(new ClassSpecification(rule, this));
 		}
+
+        RuleTree ruleTree = new RuleTree(specifications);
+        TreeNode<ClassSpecification> ruleHeir = ruleTree.createTree();
 	}
 
 	

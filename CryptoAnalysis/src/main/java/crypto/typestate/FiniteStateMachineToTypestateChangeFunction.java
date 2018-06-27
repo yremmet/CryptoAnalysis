@@ -66,30 +66,27 @@ public class FiniteStateMachineToTypestateChangeFunction extends TypeStateMachin
 					NewExpr newExpr = (NewExpr) as.getRightOp();
 					Type type = newExpr.getType();
 
-					if(analyzedType.contains(type)){
+					if(analyzedType.equals(type)){
 						AssignStmt stmt = (AssignStmt) unit;
 						out.add(createQuery(unit,method,new AllocVal(stmt.getLeftOp(), method, as.getRightOp(), new Statement(stmt, method))));
 					}
                     SootClass classUnderConsideration = ((RefType)type).getSootClass();
-                    for (RefType refType : analyzedType) {
-					    // it seems classes are sub-classes to themselves
-                        if(!(refType.getSootClass().equals(((RefType)type).getSootClass())) &&  Scene.v().getFastHierarchy().isSubclass(classUnderConsideration,refType.getSootClass())){
-                            //generate the current statement as a seed, because you want to track this object.
-                            AssignStmt stmt = (AssignStmt) unit;
-                            out.add(createQuery(unit,method,new AllocVal(stmt.getLeftOp(), method, as.getRightOp(), new Statement(stmt, method))));
-                        } else{
-                            while(classUnderConsideration != null){
-                                classUnderConsideration = ((RefType)type).getSootClass().getSuperclass();
-                                if(!(refType.getSootClass().equals(((RefType)type).getSootClass())) &&  Scene.v().getFastHierarchy().isSubclass(classUnderConsideration,refType.getSootClass())){
-                                    //generate the current statement as a seed, because you want to track this object.
-                                    AssignStmt stmt = (AssignStmt) unit;
-                                    out.add(createQuery(unit,method,new AllocVal(stmt.getLeftOp(), method, as.getRightOp(), new Statement(stmt, method))));
-                                    break;
-                                }
+                    // it seems classes are sub-classes to themselves
+                    if(!(analyzedType.getSootClass().equals(((RefType)type).getSootClass())) &&  Scene.v().getFastHierarchy().isSubclass(classUnderConsideration,analyzedType.getSootClass())){
+                        //generate the current statement as a seed, because you want to track this object.
+                        AssignStmt stmt = (AssignStmt) unit;
+                        out.add(createQuery(unit,method,new AllocVal(stmt.getLeftOp(), method, as.getRightOp(), new Statement(stmt, method))));
+                    } else{
+                        //while(classUnderConsideration != null){
+                            //classUnderConsideration = ((RefType)type).getSootClass().getSuperclass();
+                            if(!(analyzedType.getSootClass().equals(((RefType)type).getSootClass())) &&  Scene.v().getFastHierarchy().isSubclass(classUnderConsideration,analyzedType.getSootClass())){
+                                //generate the current statement as a seed, because you want to track this object.
+                                AssignStmt stmt = (AssignStmt) unit;
+                                out.add(createQuery(unit,method,new AllocVal(stmt.getLeftOp(), method, as.getRightOp(), new Statement(stmt, method))));
+                                //break;
                             }
-                        }
+                        //}
                     }
-
                 }
 			}
 		}
