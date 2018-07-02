@@ -48,11 +48,7 @@ public class RuleTree {
 
 
         if (!nodeUnderConsiderationClassFullyQualifiedName.equals(rootNodeClassFullyQualifiedName)){
-            //TODO for some reason, when nodeUnderConsiderationClassFullyQualifiedName.equals("java.security.Signature") && rootNodeClassFullyQualifiedName.equals("java.lang.Object") the scene.fastHeirarchy nodeUnderConsideration is lost.
-            if (!(nodeUnderConsiderationClassFullyQualifiedName.equals("java.security.Signature") && rootNodeClassFullyQualifiedName.equals("java.lang.Object"))
-                    && !(nodeUnderConsiderationClassFullyQualifiedName.equals("javax.crypto.spec.PBEParameterSpec") && rootNodeClassFullyQualifiedName.equals("java.lang.Object"))){
-                // recursive, if the current class specification is the sub class of the current node then go through the children.
-                if (Scene.v().getFastHierarchy().isSubclass(Scene.v().getSootClass(nodeUnderConsiderationClassFullyQualifiedName),Scene.v().getSootClass(rootNodeClassFullyQualifiedName))){
+                if (Scene.v().getOrMakeFastHierarchy().isSubclass(Scene.v().getSootClass(nodeUnderConsiderationClassFullyQualifiedName),Scene.v().getSootClass(rootNodeClassFullyQualifiedName))){
                     for (TreeNode<ClassSpecification> child : rootNode.children) {
                         successfulInsertion = insertNode(nodeUnderConsideration, child);
                     }
@@ -64,7 +60,7 @@ public class RuleTree {
 
 
                 }// if the above check is not true, check if the hierarchy is the other way around.
-                else if(Scene.v().getFastHierarchy().isSubclass(Scene.v().getSootClass(rootNodeClassFullyQualifiedName), Scene.v().getSootClass(nodeUnderConsiderationClassFullyQualifiedName))){
+                else if(Scene.v().getOrMakeFastHierarchy().isSubclass(Scene.v().getSootClass(rootNodeClassFullyQualifiedName), Scene.v().getSootClass(nodeUnderConsiderationClassFullyQualifiedName))){
                     // Update the parent of the switched node.
                     rootNode.parent.addChild(nodeUnderConsideration.data);
                     rootNode.parent.children.remove(rootNode);
@@ -80,7 +76,6 @@ public class RuleTree {
                 } else {
                     return false;
                 }
-            }
         }
 
         return successfulInsertion;
@@ -98,7 +93,8 @@ public class RuleTree {
 
         listOfTreeNodes = new ArrayList<>();
         for (ClassSpecification specification : specifications) {
-            SootClass classFromClassSpecification = Scene.v().getSootClass(Utils.getFullyQualifiedName(specification.getRule()));
+            //SootClass classFromClassSpecification = Scene.v().getSootClass(Utils.getFullyQualifiedName(specification.getRule()));
+            SootClass classFromClassSpecification = Scene.v().forceResolve(Utils.getFullyQualifiedName(specification.getRule()),SootClass.HIERARCHY);
             listOfTreeNodes.add(new TreeNode<>(new TreeNodeData(classFromClassSpecification,specification)));
             if (Utils.getFullyQualifiedName(specification.getRule()).equals("java.lang.Object")){
                 // set the pseudo rule for the class Object to be used as a root node for the rule tree.
@@ -126,11 +122,10 @@ public class RuleTree {
         boolean successfulInsertion = false; // to stop duplicates after tree parsing if one of the children has a successful insert.
 
         if (!nodeUnderConsideration.data.getSootClass().equals(rootNode.data.getSootClass())){
-            //TODO for some reason, when nodeUnderConsiderationClassFullyQualifiedName.equals("java.security.Signature") && rootNodeClassFullyQualifiedName.equals("java.lang.Object") the scene.fastHeirarchy nodeUnderConsideration is lost.
-            if (!(nodeUnderConsideration.data.getSootClass().getName().equals("java.security.Signature") && rootNode.data.getSootClass().getName().equals("java.lang.Object"))
-                    && !(nodeUnderConsideration.data.getSootClass().getName().equals("javax.crypto.spec.PBEParameterSpec") && rootNode.data.getSootClass().getName().equals("java.lang.Object"))
-                    && !(nodeUnderConsideration.data.getSootClass().getName().equals("javax.crypto.spec.SecretKeySpec") && rootNode.data.getSootClass().getName().equals("java.lang.Object"))){
-                if (Scene.v().getFastHierarchy().isSubclass(nodeUnderConsideration.data.getSootClass(), rootNode.data.getSootClass())){
+                System.out.println(nodeUnderConsideration.data.getSootClass().getName());
+            System.out.println(rootNode.data.getSootClass().getName() + "\n");
+                if (Scene.v().getOrMakeFastHierarchy().isSubclass(nodeUnderConsideration.data.getSootClass(), rootNode.data.getSootClass())){
+
                     for (TreeNode<TreeNodeData> child : rootNode.children) {
                         successfulInsertion = newInsertNode(nodeUnderConsideration, child);
                     }
@@ -141,7 +136,7 @@ public class RuleTree {
                     }
 
                 }// if the above check is not true, check if the hierarchy is the other way around.
-                else if(Scene.v().getFastHierarchy().isSubclass(rootNode.data.getSootClass(), nodeUnderConsideration.data.getSootClass())){
+                else if(Scene.v().getOrMakeFastHierarchy().isSubclass(rootNode.data.getSootClass(), nodeUnderConsideration.data.getSootClass())){
                     // Update the parent of the switched node.
                     rootNode.parent.addChild(nodeUnderConsideration.data);
                     rootNode.parent.children.remove(rootNode);
@@ -157,7 +152,6 @@ public class RuleTree {
                 } else {
                     return false;
                 }
-            }
         }
 
         return successfulInsertion;
