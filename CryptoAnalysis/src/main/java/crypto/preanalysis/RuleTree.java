@@ -4,18 +4,19 @@ import crypto.Utils;
 import crypto.analysis.ClassSpecification;
 import soot.Scene;
 import soot.SootClass;
-import sun.reflect.generics.tree.Tree;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
+import java.util.*;
 
 public class RuleTree {
+
     private List<TreeNode<ClassSpecification>> treeNodes;
     private TreeNode<ClassSpecification>objectNode;
 
+    private List<TreeNode<TreeNodeData>> listOfTreeNodes;
+    private TreeNode<TreeNodeData> newObjectNode;
+
+
     public RuleTree(List<ClassSpecification> specifications) {
-        //TODO the tree nodes need to hold the class as well as its specification.
         treeNodes = new ArrayList<>();
         for (ClassSpecification specification : specifications) {
             treeNodes.add(new TreeNode(specification));
@@ -26,45 +27,17 @@ public class RuleTree {
         }
     }
 
-    public TreeNode<ClassSpecification> createTree(){
 
+    public TreeNode<ClassSpecification> createTree(){
         // temp node as a root for the tree.
         TreeNode<ClassSpecification> ruleHeir = objectNode;
 
         for (TreeNode<ClassSpecification> treeNode : treeNodes) {
-
-            /*if (ruleHeir.children.size()==0){
-                ruleHeir.addChild(treeNode.data);
-            } else{
-                for (TreeNode<ClassSpecification> node : ruleHeir.children) {
-                    if(Scene.v().getFastHierarchy().isSubclass(Scene.v().getSootClass(node.data.getRule().getClassName()), Scene.v().getSootClass(treeNode.data.getRule().getClassName()))   ){
-
-                    }
-                }
-            }*/
-
             insertNode(treeNode, ruleHeir);
-
-            //insertNodeNonRec(treeNode);
-
-            // part of initial phase where I was adding all the nodes on the same level.
-            //ruleHeir.addChild(treeNode.data);
-
-
         }
-
 
         // change the return statement;
         return ruleHeir;
-    }
-
-    public void insertNodeNonRec(TreeNode<ClassSpecification> treeNodeParent){
-        for (TreeNode<ClassSpecification> treeNode : treeNodes) {
-            if (Scene.v().getFastHierarchy().isSubclass(Scene.v().getSootClass(treeNode.data.getRule().getClassName()),Scene.v().getSootClass(treeNodeParent.data.getRule().getClassName()))){
-                treeNodeParent.addChild(treeNode.data);
-            }
-
-        }
     }
 
     // recursive
@@ -110,18 +83,84 @@ public class RuleTree {
             }
         }
 
-
-
         return successfulInsertion;
 
-
-        // get the subclasses of the rule of the node under consideration on the tree.
-        /*Collection<SootClass> subclasses = Scene.v().getFastHierarchy().getSubclassesOf(Scene.v().getSootClass(rootNode.nodeUnderConsideration.getRule().getClassName()));
-
-        subclasses = Scene.v().getActiveHierarchy().getSubclassesOf(Scene.v().getSootClass(rootNode.nodeUnderConsideration.getRule().getClassName()));
-        nodeUnderConsideration.getRule().getClassName();
-        rootNode.nodeUnderConsideration.getRule();
-*/
-
     }
+
+
+    /**
+     * *****************************************************************************************************************
+     * based on the new class
+     *
+     */
+
+    public RuleTree(List<ClassSpecification> specifications, boolean psuedo) {
+
+        listOfTreeNodes = new ArrayList<>();
+        for (ClassSpecification specification : specifications) {
+            SootClass classFromClassSpecification = Scene.v().getSootClass(Utils.getFullyQualifiedName(specification.getRule()));
+            listOfTreeNodes.add(new TreeNode<>(new TreeNodeData(classFromClassSpecification,specification)));
+            if (Utils.getFullyQualifiedName(specification.getRule()).equals("java.lang.Object")){
+                // set the pseudo rule for the class Object to be used as a root node for the rule tree.
+                newObjectNode = new TreeNode<>(new TreeNodeData(classFromClassSpecification,specification));
+            }
+        }
+    }
+
+
+    public TreeNode<TreeNodeData> newCreateTree(){
+
+        // temp node as a root for the tree.
+        TreeNode<TreeNodeData> newRuleHeir = newObjectNode;
+
+        for (TreeNode<TreeNodeData> treeNode : listOfTreeNodes) {
+            newInsertNode(treeNode,newRuleHeir);
+        }
+
+        // change the return statement;
+        return newRuleHeir;
+    }
+
+    //recursive
+    public boolean newInsertNode(TreeNode<TreeNodeData> nodeUnderConsideration, TreeNode<TreeNodeData> rootNode){
+        boolean successfulInsertion = false; // to stop duplicates after tree parsing if one of the children has a successful insert.
+
+        if (!nodeUnderConsideration.data.getSootClass().equals(rootNode.data.getSootClass())){
+            //TODO for some reason, when nodeUnderConsiderationClassFullyQualifiedName.equals("java.security.Signature") && rootNodeClassFullyQualifiedName.equals("java.lang.Object") the scene.fastHeirarchy nodeUnderConsideration is lost.
+            if (!(nodeUnderConsideration.data.getSootClass().getName().equals("java.security.Signature") && rootNode.data.getSootClass().getName().equals("java.lang.Object"))
+                    && !(nodeUnderConsideration.data.getSootClass().getName().equals("javax.crypto.spec.PBEParameterSpec") && rootNode.data.getSootClass().getName().equals("java.lang.Object"))
+                    && !(nodeUnderConsideration.data.getSootClass().getName().equals("javax.crypto.spec.SecretKeySpec") && rootNode.data.getSootClass().getName().equals("java.lang.Object"))){
+                if (Scene.v().getFastHierarchy().isSubclass(nodeUnderConsideration.data.getSootClass(), rootNode.data.getSootClass())){
+                    for (TreeNode<TreeNodeData> child : rootNode.children) {
+                        successfulInsertion = newInsertNode(nodeUnderConsideration, child);
+                    }
+                    // after traversal through the children, if insertion is unsuccessful, or if there are no children, add the node as a child.
+                    if(!successfulInsertion){
+                        rootNode.addChild(nodeUnderConsideration.data);
+                        successfulInsertion = true;
+                    }
+
+                }// if the above check is not true, check if the hierarchy is the other way around.
+                else if(Scene.v().getFastHierarchy().isSubclass(rootNode.data.getSootClass(), nodeUnderConsideration.data.getSootClass())){
+                    // Update the parent of the switched node.
+                    rootNode.parent.addChild(nodeUnderConsideration.data);
+                    rootNode.parent.children.remove(rootNode);
+
+                    for (TreeNode<TreeNodeData> child : nodeUnderConsideration.children) {
+                        successfulInsertion = newInsertNode(child, nodeUnderConsideration);
+                    }
+                    if(!successfulInsertion){
+                        nodeUnderConsideration.addChild(rootNode.data);
+                        successfulInsertion = true;
+                    }
+
+                } else {
+                    return false;
+                }
+            }
+        }
+
+        return successfulInsertion;
+    }
+
 }
