@@ -2,6 +2,7 @@ package main;
 
 import java.io.IOException;
 import java.security.GeneralSecurityException;
+import java.security.InvalidKeyException;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
@@ -13,6 +14,7 @@ import javax.crypto.Cipher;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.KeyGenerator;
 import javax.crypto.Mac;
+import javax.crypto.NoSuchPaddingException;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
@@ -79,6 +81,40 @@ public class Main {
 	}
 
 	public void use(Object object) {
-		
+
+	}
+
+	public static void cipherWrongPadding() throws NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException{
+		String secretKey = "SECRET";
+		byte[] keyBytes = secretKey.getBytes();
+		SecretKeySpec secretKeySpec = new SecretKeySpec(keyBytes, "AES");
+		Cipher cipher = Cipher.getInstance("AES/ECB/PKCS5Padding");
+		cipher.init(Cipher.ENCRYPT_MODE, secretKeySpec);
+		String plainText = "plaintext";
+		byte[] plainBytes = plainText.getBytes();
+		byte[] doFinal = cipher.doFinal(plainBytes);
+	}
+
+	public static void cipherUpdateAfterFinal() throws InvalidKeyException, NoSuchAlgorithmException, NoSuchPaddingException, IllegalBlockSizeException, BadPaddingException{
+		String secretKey = "SECRET";
+		byte[] keyBytes = secretKey.getBytes();
+		SecretKeySpec secretKeySpec = new SecretKeySpec(keyBytes, "AES/CBC");
+		Cipher cipher = Cipher.getInstance("AES/CBC");
+		cipher.init(Cipher.ENCRYPT_MODE, secretKeySpec);
+		String plainText = "plaintext";
+		byte[] plainBytes = plainText.getBytes();
+		byte[] doFinal = cipher.doFinal(plainBytes);
+		byte[] pre_ciphertext = cipher.update(doFinal);
+	}
+
+	public static void cipherCorrectUsage() throws InvalidKeyException, NoSuchAlgorithmException, NoSuchPaddingException, IllegalBlockSizeException, BadPaddingException{
+		String secretKey = "SECRET";
+		byte[] keyBytes = secretKey.getBytes();
+		SecretKeySpec secretKeySpec = new SecretKeySpec(keyBytes, "AES/CBC");
+		Cipher cipher = Cipher.getInstance("AES/CBC");
+		cipher.init(Cipher.ENCRYPT_MODE, secretKeySpec);
+		String plainText = "plaintext";
+		byte[] plainBytes = plainText.getBytes();
+		byte[] doFinal = cipher.doFinal(plainBytes);
 	}
 }
