@@ -73,13 +73,16 @@ public class HeadlessTests {
 		setErrorsCount("<main.Main: void main(java.lang.String[])>", RequiredPredicateError.class, 1);
 		setErrorsCount("<main.Main: void keyStoreExample()>", NeverTypeOfError.class, 1);
 		setErrorsCount("<main.Main: void cipherUsageExample()>", ConstraintError.class, 1);
-		
+
 		setErrorsCount("<main.Main: void use(javax.crypto.Cipher)>", TypestateError.class, 1);
 
 
 		//TODO this is a spurious finding. What happens here?
 //		setErrorsCount("<Crypto.PWHasher: java.lang.Boolean verifyPWHash(char[],java.lang.String)>", RequiredPredicateError.class, 1);
-		
+
+		setErrorsCount("<main.Main: void cipherWrongPadding()>", ConstraintError.class, 1);
+
+		setErrorsCount("<main.Main: void cipherUpdateAfterFinal()>", IncompleteOperationError.class, 1);
 
 		setErrorsCount("<main.Main: void incorrectKeyForWrongCipher()>", ConstraintError.class, 1);
 		setErrorsCount("<main.Main: void incorrectKeyForWrongCipher()>", RequiredPredicateError.class, 1);
