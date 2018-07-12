@@ -96,8 +96,9 @@ public class Main {
 	}
 
 	public static void cipherUpdateAfterFinal() throws InvalidKeyException, NoSuchAlgorithmException, NoSuchPaddingException, IllegalBlockSizeException, BadPaddingException{
-		String secretKey = "SECRET";
-		byte[] keyBytes = secretKey.getBytes();
+		SecureRandom random = new SecureRandom();
+		byte[] keyBytes = new byte[30];
+		random.nextBytes(keyBytes);
 		SecretKeySpec secretKeySpec = new SecretKeySpec(keyBytes, "AES/CBC");
 		Cipher cipher = Cipher.getInstance("AES/CBC");
 		cipher.init(Cipher.ENCRYPT_MODE, secretKeySpec);
@@ -108,13 +109,13 @@ public class Main {
 	}
 
 	public static void cipherCorrectUsage() throws InvalidKeyException, NoSuchAlgorithmException, NoSuchPaddingException, IllegalBlockSizeException, BadPaddingException{
-		String secretKey = "SECRET";
-		byte[] keyBytes = secretKey.getBytes();
+		SecureRandom random = SecureRandom.getInstanceStrong();
+		byte[] keyBytes = random.generateSeed(128);
 		SecretKeySpec secretKeySpec = new SecretKeySpec(keyBytes, "AES/CBC");
 		Cipher cipher = Cipher.getInstance("AES/CBC");
 		cipher.init(Cipher.ENCRYPT_MODE, secretKeySpec);
 		String plainText = "plaintext";
 		byte[] plainBytes = plainText.getBytes();
-		byte[] doFinal = cipher.doFinal(plainBytes);
+		cipher.doFinal(plainBytes);
 	}
 }
