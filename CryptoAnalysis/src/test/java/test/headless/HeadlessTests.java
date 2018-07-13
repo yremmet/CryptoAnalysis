@@ -87,6 +87,8 @@ public class HeadlessTests {
 		setErrorsCount("<main.Main: void incorrectKeyForWrongCipher()>", ConstraintError.class, 1);
 		setErrorsCount("<main.Main: void incorrectKeyForWrongCipher()>", RequiredPredicateError.class, 1);
 
+
+		setErrorsCount("<main.Main: void cipherWrongDoFinal()>", TypestateError.class, 1);
 		scanner.exec();
 		assertErrors();
 	}

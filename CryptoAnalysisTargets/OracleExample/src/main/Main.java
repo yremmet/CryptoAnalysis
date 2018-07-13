@@ -119,4 +119,13 @@ public class Main {
 		byte[] pre_ciphertext = cipher.update(doFinal);
 		doFinal = cipher.doFinal(plainBytes);
 	}
+
+    public static void cipherWrongDoFinal() throws InvalidKeyException, NoSuchAlgorithmException, NoSuchPaddingException, IllegalBlockSizeException, BadPaddingException{
+        SecureRandom random = SecureRandom.getInstanceStrong();
+        byte[] keyBytes = random.generateSeed(128);
+        SecretKeySpec secretKeySpec = new SecretKeySpec(keyBytes, "AES");
+        Cipher cipher = Cipher.getInstance("AES/CBC");
+        cipher.init(Cipher.ENCRYPT_MODE, secretKeySpec);
+        byte[] doFinal = cipher.doFinal();
+    }
 }
