@@ -89,6 +89,7 @@ public class HeadlessTests {
 
 
 		setErrorsCount("<main.Main: void cipherWrongDoFinal()>", TypestateError.class, 1);
+		setErrorsCount("<main.Main: void cipherUpdateWithoutFinal()>", IncompleteOperationError.class, 1);
 		scanner.exec();
 		assertErrors();
 	}

@@ -16,7 +16,6 @@ import javax.crypto.KeyGenerator;
 import javax.crypto.Mac;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.SecretKey;
-import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 
 import Crypto.PWHasher;
@@ -127,5 +126,16 @@ public class Main {
         Cipher cipher = Cipher.getInstance("AES/CBC");
         cipher.init(Cipher.ENCRYPT_MODE, secretKeySpec);
         byte[] doFinal = cipher.doFinal();
+    }
+
+    public static void cipherUpdateWithoutFinal() throws InvalidKeyException, NoSuchAlgorithmException, NoSuchPaddingException{
+        SecureRandom random = SecureRandom.getInstanceStrong();
+        byte[] keyBytes = random.generateSeed(128);
+        SecretKeySpec secretKeySpec = new SecretKeySpec(keyBytes, "AES");
+        Cipher cipher = Cipher.getInstance("AES/CBC");
+        cipher.init(Cipher.ENCRYPT_MODE, secretKeySpec);
+        String plainText = "plaintext";
+        byte[] plainBytes = plainText.getBytes();
+        byte[] pre_ciphertext = cipher.update(plainBytes);
     }
 }
