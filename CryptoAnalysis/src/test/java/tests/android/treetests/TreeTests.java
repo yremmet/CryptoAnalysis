@@ -1,12 +1,14 @@
-package tests.android;
+package tests.android.treetests;
 
 import android.app.Activity;
 import android.widget.LinearLayout;
 import org.junit.Test;
+import test.MockedUsagePatternTestingFramework;
 import test.UsagePatternTestingFramework;
 import test.assertions.Assertions;
+import tests.android.Inher_Button;
 
-public class TreeTests  extends UsagePatternTestingFramework {
+public class TreeTests  extends MockedUsagePatternTestingFramework {
     @Test
     public void singleLevelInheritance(){
         Activity context = new Activity();

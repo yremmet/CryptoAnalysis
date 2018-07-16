@@ -13,6 +13,7 @@ import boomerang.Query;
 import boomerang.debugger.Debugger;
 import boomerang.jimple.Statement;
 import boomerang.jimple.Val;
+import crypto.android.UIHierarchyData;
 import crypto.preanalysis.RuleTree;
 import crypto.preanalysis.TreeNode;
 import crypto.preanalysis.TreeNodeData;
@@ -69,11 +70,14 @@ public abstract class CryptoScanner {
 			specifications.add(new ClassSpecification(rule, this));
 		}
 
-		RuleTree ruleTree = new RuleTree(specifications);
-        TreeNode<ClassSpecification> ruleHeir = ruleTree.createTree();
-/*
-		RuleTree newRuleTree = new RuleTree(specifications, true);
-		TreeNode<TreeNodeData> newRuleHeir = newRuleTree.newCreateTree();*/
+		/*RuleTree ruleTree = new RuleTree(specifications);
+        TreeNode<ClassSpecification> ruleHeir = ruleTree.createTree();*/
+		RuleTree newRuleTree = new RuleTree(specifications);
+		TreeNode<TreeNodeData> newRuleHeir = newRuleTree.createTree();
+		UIHierarchyData dot = new UIHierarchyData();
+		dot.getNodesAndEdges(newRuleHeir);
+		dot.createDotFile();
+
 	}
 
 	
