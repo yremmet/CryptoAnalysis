@@ -47,9 +47,9 @@ public class UIHierarchyData {
             builder.append(single.getKey());
             builder.append(" -> ");
             builder.append(single.getValue());
-            builder.append(" [label=");
+            builder.append("[label=\"");
             builder.append(s);
-            builder.append("]");
+            builder.append("\"]");
             builder.append(";\n");
         }
 
