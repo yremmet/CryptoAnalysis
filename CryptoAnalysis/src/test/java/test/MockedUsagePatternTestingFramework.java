@@ -1,52 +1,36 @@
 package test;
 
 import com.google.common.collect.Lists;
-import crypto.analysis.ClassSpecification;
 import crypto.rules.*;
+import soot.Body;
+import soot.SootMethod;
+import soot.Unit;
+import soot.Value;
+import soot.jimple.InvokeExpr;
+import soot.jimple.Stmt;
+import soot.jimple.StringConstant;
+import test.assertions.Assertions;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 public class MockedUsagePatternTestingFramework extends UsagePatternTestingFramework {
+    private String[] classesToMock;
     @Override
     protected List<CryptSLRule> getRules(){
 
+        if (classesToMock == null){
+            return super.getRules();
+        }
         List<CryptSLRule> listOfMockedRules = Lists.newArrayList();
 
-        listOfMockedRules.add(getMockedRule("java.lang.Object"));
-        listOfMockedRules.add(getMockedRule("javax.crypto.spec.SecretKeySpec"));
-        listOfMockedRules.add(getMockedRule("javax.crypto.spec.DHGenParameterSpec"));
-        listOfMockedRules.add(getMockedRule("java.security.KeyStore"));
-        listOfMockedRules.add(getMockedRule("javax.crypto.spec.GCMParameterSpec"));
-        listOfMockedRules.add(getMockedRule("java.security.spec.DSAParameterSpec"));
-        listOfMockedRules.add(getMockedRule("android.widget.TextView"));
-        listOfMockedRules.add(getMockedRule("javax.crypto.spec.IvParameterSpec"));
-        listOfMockedRules.add(getMockedRule("javax.crypto.KeyGenerator"));
-        listOfMockedRules.add(getMockedRule("javax.crypto.KeyGenerator"));
-        listOfMockedRules.add(getMockedRule("android.widget.TextView"));
-        listOfMockedRules.add(getMockedRule("javax.crypto.SecretKey"));
-        listOfMockedRules.add(getMockedRule("javax.crypto.SecretKeyFactory"));
-        listOfMockedRules.add(getMockedRule("java.security.spec.DSAGenParameterSpec"));
-        listOfMockedRules.add(getMockedRule("javax.crypto.spec.PBEKeySpec"));
-        listOfMockedRules.add(getMockedRule("com.google.common.base.Stopwatch"));
-        listOfMockedRules.add(getMockedRule("java.security.Signature"));
-        listOfMockedRules.add(getMockedRule("javax.crypto.Mac"));
-        listOfMockedRules.add(getMockedRule("java.security.spec.RSAKeyGenParameterSpec"));
-        listOfMockedRules.add(getMockedRule("java.security.KeyPair"));
-        listOfMockedRules.add(getMockedRule("javax.crypto.spec.PBEParameterSpec"));
-        listOfMockedRules.add(getMockedRule("javax.xml.crypto.dsig.spec.HMACParameterSpec"));
-        listOfMockedRules.add(getMockedRule("javax.crypto.spec.DHParameterSpec"));
-        listOfMockedRules.add(getMockedRule("java.security.KeyPairGenerator"));
-        listOfMockedRules.add(getMockedRule("javax.crypto.Cipher"));
-        listOfMockedRules.add(getMockedRule("java.security.MessageDigest"));
-        listOfMockedRules.add(getMockedRule("java.security.SecureRandom"));
-        listOfMockedRules.add(getMockedRule("android.widget.Button"));
-        listOfMockedRules.add(getMockedRule("java.io.File"));
-        listOfMockedRules.add(getMockedRule("android.app.Activity"));
-        listOfMockedRules.add(getMockedRule("java.security.AlgorithmParameters"));
+        for (String className : getClassesToMock()) {
+            listOfMockedRules.add(getMockedRule(className));
+        }
 
         return listOfMockedRules;
     }
@@ -74,5 +58,42 @@ public class MockedUsagePatternTestingFramework extends UsagePatternTestingFrame
         when(mockedRule.getClassName()).thenReturn(className);
 
         return mockedRule;
+    }
+
+    @Override
+    protected void extractBenchmarkMethods(SootMethod m, Set<Assertion> queries, Set<SootMethod> visited){
+        if (!m.hasActiveBody() || visited.contains(m))
+            return;
+        visited.add(m);
+        Body activeBody = m.getActiveBody();
+
+        for (Unit u : activeBody.getUnits()) {
+            if (!(u instanceof Stmt))
+                continue;
+
+            Stmt stmt = (Stmt) u;
+            if (!(stmt.containsInvokeExpr()))
+                continue;
+            InvokeExpr invokeExpr = stmt.getInvokeExpr();
+            if (!invokeExpr.getMethod().getDeclaringClass().toString().equals(Assertions.class.getName()))
+                continue;
+
+            String invocationName = invokeExpr.getMethod().getName();
+            if(invocationName.startsWith("classesToMock")){
+                Value param = invokeExpr.getArg(0);
+                if (!(param instanceof StringConstant))
+                    continue;
+                StringConstant classesToMock = (StringConstant) param;
+                setClassesToMock(classesToMock.value.split(","));
+            }
+        }
+    }
+
+    public String[] getClassesToMock() {
+        return classesToMock;
+    }
+
+    public void setClassesToMock(String[] classesToMock) {
+        this.classesToMock = classesToMock;
     }
 }

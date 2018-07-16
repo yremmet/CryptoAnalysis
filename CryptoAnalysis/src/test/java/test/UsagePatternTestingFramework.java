@@ -366,7 +366,7 @@ public abstract class UsagePatternTestingFramework extends AbstractTestingFramew
 		return results;
 	}
 
-	private void extractBenchmarkMethods(SootMethod m, Set<Assertion> queries, Set<SootMethod> visited) {
+	protected void extractBenchmarkMethods(SootMethod m, Set<Assertion> queries, Set<SootMethod> visited) {
 		if (!m.hasActiveBody() || visited.contains(m))
 			return;
 		visited.add(m);

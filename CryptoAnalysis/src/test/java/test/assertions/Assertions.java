@@ -58,4 +58,8 @@ public class Assertions {
 	public static void typestateErrors(int i) {
 		
 	}
+
+	public static void classesToMock(String classesToMock){
+
+    }
 }

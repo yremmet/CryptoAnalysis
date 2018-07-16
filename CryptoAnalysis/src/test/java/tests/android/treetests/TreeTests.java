@@ -11,6 +11,8 @@ import tests.android.Inher_Button;
 public class TreeTests  extends MockedUsagePatternTestingFramework {
     @Test
     public void singleLevelInheritance(){
+        Assertions.classesToMock("java.lang.Object,javax.crypto.spec.SecretKeySpec");
+
         Activity context = new Activity();
         LinearLayout layout = new LinearLayout(context);
         //Assertions.extValue(0);
