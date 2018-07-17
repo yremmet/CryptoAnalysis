@@ -28,11 +28,20 @@ public class RuleTree {
 
 
     public TreeNode<TreeNodeData> createTree() {
-        // temp node as a root for the tree.
-        TreeNode<TreeNodeData> newRuleHeir = objectNode;
-        for (TreeNode<TreeNodeData> treeNode : listOfTreeNodes) {
-            insertNode(treeNode, newRuleHeir);
+        TreeNode<TreeNodeData> newRuleHeir = null;
+        if (listOfTreeNodes.size() > 0){
+            // temp node as a root for the tree.
+            if (objectNode == null){
+                newRuleHeir = listOfTreeNodes.get(0);
+            } else{
+                newRuleHeir = objectNode;
+            }
+
+            for (TreeNode<TreeNodeData> treeNode : listOfTreeNodes) {
+                insertNode(treeNode, newRuleHeir);
+            }
         }
+
         return newRuleHeir;
     }
 
