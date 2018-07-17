@@ -67,13 +67,26 @@ public class RuleTree {
             }// If the above check is not true, check if the hierarchy is the other way around.
             else if (Scene.v().getOrMakeFastHierarchy().isSubclass(rootNode.data.getSootClass(), nodeUnderConsideration.data.getSootClass())) {
                 // Add the node under consideration as a child to the root node. And remove the root node from the children of its parent.
-                rootNode.parent.children.add(nodeUnderConsideration);
-                rootNode.parent.children.remove(rootNode);
+                TreeNode<TreeNodeData> parent = rootNode.parent;
+                parent.children.add(nodeUnderConsideration);
+                parent.children.remove(rootNode);
+
+                // check the former siblings of the exchanged sub class, if they are sub classes to the new super class, add them as children.
+                for (TreeNode<TreeNodeData> child : parent.children) {
+                    if (child.data.getSootClass() != nodeUnderConsideration.data.getSootClass()){
+                        if (Scene.v().getOrMakeFastHierarchy().isSubclass(child.data.getSootClass(), nodeUnderConsideration.data.getSootClass())) {
+                            parent.children.remove(child);
+                            insertNode(child,nodeUnderConsideration);
+                        }
+                    }
+
+                }
+
 
                 // In case the node under consideration has children.
                 for (TreeNode<TreeNodeData> child : nodeUnderConsideration.children) {
                     if (insertNode(child, nodeUnderConsideration)) {
-                        return true;
+                        return true; // the recursion must break here.
                     }
                 }
 

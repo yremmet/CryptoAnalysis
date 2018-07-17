@@ -12,7 +12,6 @@ public class TreeTests  extends MockedUsagePatternTestingFramework {
     }
 
     @Test
-    // TODO see why this fails.
     public void singleLevelInheritanceMinusObject(){
         Assertions.classesToMock("java.io.File,tests.android.treetests.Inher_File");
     }
@@ -86,7 +85,6 @@ public class TreeTests  extends MockedUsagePatternTestingFramework {
 
     @Test
     // Keeping three, moved one after four
-    // TODO invalid dot file
     public void exchangeWithinTree2(){
         Assertions.classesToMock("java.lang.Object,tests.android.treetests.Three,tests.android.treetests.Four,tests.android.treetests.One," +
                 "tests.android.treetests.Seven,tests.android.treetests.Eight,tests.android.treetests.Two,tests.android.treetests.Five," +
@@ -99,5 +97,38 @@ public class TreeTests  extends MockedUsagePatternTestingFramework {
         Assertions.classesToMock("tests.android.treetests.One,tests.android.treetests.Three,tests.android.treetests.Four," +
                 "tests.android.treetests.Seven,tests.android.treetests.Eight,tests.android.treetests.Two,tests.android.treetests.Five," +
                 "tests.android.treetests.Six,tests.android.treetests.Nine,java.lang.Object");
+    }
+
+    @Test
+    // Three and Eight added first.
+    public void threeAndEightAddedEarlier(){
+        Assertions.classesToMock("tests.android.treetests.Three,tests.android.treetests.Eight,java.lang.Object,tests.android.treetests.One,tests.android.treetests.Four," +
+                "tests.android.treetests.Seven,tests.android.treetests.Two,tests.android.treetests.Five," +
+                "tests.android.treetests.Six,tests.android.treetests.Nine");
+    }
+
+    @Test
+    // Four and Nine added first
+    public void fourAndNineAddedEarlier(){
+        Assertions.classesToMock("tests.android.treetests.Four,tests.android.treetests.Nine,java.lang.Object,tests.android.treetests.One,tests.android.treetests.Three," +
+                "tests.android.treetests.Seven,tests.android.treetests.Eight,tests.android.treetests.Two,tests.android.treetests.Five," +
+                "tests.android.treetests.Six");
+    }
+
+    @Test
+    // Object is at the end
+    public void objectAtEnd() {
+        Assertions.classesToMock("tests.android.treetests.One,tests.android.treetests.Three,tests.android.treetests.Four," +
+                "tests.android.treetests.Seven,tests.android.treetests.Eight,tests.android.treetests.Two,tests.android.treetests.Five," +
+                "tests.android.treetests.Six,tests.android.treetests.Nine,java.lang.Object");
+
+    }
+
+    @Test
+    // Object class inserted after Seven
+    public void randomObjectInsertion(){
+        Assertions.classesToMock("tests.android.treetests.One,tests.android.treetests.Three,tests.android.treetests.Four," +
+                "tests.android.treetests.Seven,java.lang.Object,tests.android.treetests.Eight,tests.android.treetests.Two,tests.android.treetests.Five," +
+                "tests.android.treetests.Six,tests.android.treetests.Nine");
     }
 }
