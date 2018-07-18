@@ -72,8 +72,8 @@ public abstract class CryptoScanner {
 
 		/*RuleTree ruleTree = new RuleTree(specifications);
         TreeNode<ClassSpecification> ruleHeir = ruleTree.createTree();*/
-		RuleTree newRuleTree = new RuleTree(specifications);
-		TreeNode<TreeNodeData> newRuleHeir = newRuleTree.createTree();
+		RuleTree newRuleTree = new RuleTree();
+		TreeNode<TreeNodeData> newRuleHeir = newRuleTree.createTree(specifications);
 		UIHierarchyData dot = new UIHierarchyData();
 		dot.getNodesAndEdges(newRuleHeir);
 		dot.createDotFile();

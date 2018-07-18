@@ -9,40 +9,30 @@ import java.util.*;
 
 public class RuleTree {
 
-    private List<TreeNode<TreeNodeData>> listOfTreeNodes;
-    private TreeNode<TreeNodeData> objectNode;
+    public TreeNode<TreeNodeData> createTree(List<ClassSpecification> specifications) {
+        if (specifications.size()>0){
+            TreeNode<TreeNodeData> objectNode = null;
+            List<TreeNode<TreeNodeData>> listOfTreeNodes = new ArrayList<>();
 
-    public RuleTree(List<ClassSpecification> specifications) {
-
-        listOfTreeNodes = new ArrayList<>();
-        for (ClassSpecification specification : specifications) {
-            // Create TreeNodeData with the class and specification for each specification.
-            SootClass classFromClassSpecification = Scene.v().forceResolve(Utils.getFullyQualifiedName(specification.getRule()), SootClass.HIERARCHY);
-            listOfTreeNodes.add(new TreeNode<>(new TreeNodeData(classFromClassSpecification, specification)));
-            if (Utils.getFullyQualifiedName(specification.getRule()).equals("java.lang.Object")) {
-                // set the pseudo rule for the class Object to be used as a root node for the rule tree.
-                objectNode = new TreeNode<>(new TreeNodeData(classFromClassSpecification, specification));
+            // This loop is needed to id the Object rule to avoid multiple apexes for the tree
+            for (ClassSpecification specification : specifications) {
+                // Create TreeNodeData with the class and specification for each specification.
+                SootClass classFromClassSpecification = Scene.v().forceResolve(Utils.getFullyQualifiedName(specification.getRule()), SootClass.HIERARCHY);
+                listOfTreeNodes.add(new TreeNode<>(new TreeNodeData(classFromClassSpecification, specification)));
+                if (Utils.getFullyQualifiedName(specification.getRule()).equals("java.lang.Object")) {
+                    // set the pseudo rule for the class Object to be used as a root node for the rule tree.
+                    objectNode = new TreeNode<>(new TreeNodeData(classFromClassSpecification, specification));
+                }
             }
+
+            if (objectNode != null){
+                for (TreeNode<TreeNodeData> treeNode : listOfTreeNodes) {
+                    insertNode(treeNode, objectNode);
+                }
+            }
+            return objectNode;
         }
-    }
-
-
-    public TreeNode<TreeNodeData> createTree() {
-        TreeNode<TreeNodeData> newRuleHeir = null;
-        if (listOfTreeNodes.size() > 0){
-            // temp node as a root for the tree.
-            if (objectNode == null){
-                newRuleHeir = listOfTreeNodes.get(0);
-            } else{
-                newRuleHeir = objectNode;
-            }
-
-            for (TreeNode<TreeNodeData> treeNode : listOfTreeNodes) {
-                insertNode(treeNode, newRuleHeir);
-            }
-        }
-
-        return newRuleHeir;
+    return null;
     }
 
     public boolean insertNode(TreeNode<TreeNodeData> nodeUnderConsideration, TreeNode<TreeNodeData> rootNode) {
