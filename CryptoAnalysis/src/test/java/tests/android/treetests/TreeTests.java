@@ -11,8 +11,9 @@ public class TreeTests  extends MockedUsagePatternTestingFramework {
         Assertions.classesToMock("java.lang.Object,java.io.File");
     }
 
-    @Test
+    @Test(expected = NullPointerException.class)
     public void singleLevelInheritanceMinusObject(){
+        // expect NullPointerException
         Assertions.classesToMock("java.io.File,tests.android.treetests.Inher_File");
     }
 
@@ -129,6 +130,22 @@ public class TreeTests  extends MockedUsagePatternTestingFramework {
     public void randomObjectInsertion(){
         Assertions.classesToMock("tests.android.treetests.One,tests.android.treetests.Three,tests.android.treetests.Four," +
                 "tests.android.treetests.Seven,java.lang.Object,tests.android.treetests.Eight,tests.android.treetests.Two,tests.android.treetests.Five," +
+                "tests.android.treetests.Six,tests.android.treetests.Nine");
+    }
+
+    @Test
+    // Rule for Eight present in the tree.
+    public void idCorrectRule(){
+        Assertions.classesToMock("java.lang.Object,tests.android.treetests.One,tests.android.treetests.Three,tests.android.treetests.Four," +
+                "tests.android.treetests.Seven,tests.android.treetests.Eight,tests.android.treetests.Two,tests.android.treetests.Five," +
+                "tests.android.treetests.Six,tests.android.treetests.Nine");
+    }
+
+    @Test
+    // Rule for Eight absent in the tree.
+    public void idCorrectRule2(){
+        Assertions.classesToMock("java.lang.Object,tests.android.treetests.One,tests.android.treetests.Three,tests.android.treetests.Four," +
+                "tests.android.treetests.Seven,tests.android.treetests.Two,tests.android.treetests.Five," +
                 "tests.android.treetests.Six,tests.android.treetests.Nine");
     }
 }

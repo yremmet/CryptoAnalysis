@@ -22,6 +22,8 @@ import crypto.rules.CryptSLRule;
 import crypto.typestate.CryptSLMethodToSootMethod;
 import heros.utilities.DefaultValueMap;
 import ideal.IDEALSeedSolver;
+import soot.Scene;
+import soot.SootClass;
 import soot.SootMethod;
 import soot.Unit;
 import soot.jimple.toolkits.ide.icfg.BiDiInterproceduralCFG;
@@ -74,9 +76,14 @@ public abstract class CryptoScanner {
         TreeNode<ClassSpecification> ruleHeir = ruleTree.createTree();*/
 		RuleTree newRuleTree = new RuleTree();
 		TreeNode<TreeNodeData> newRuleHeir = newRuleTree.createTree(specifications);
-		dotDataForRuleTree dot = new dotDataForRuleTree();
-		dot.getNodesAndEdges(newRuleHeir);
-		dot.createDotFile();
+
+		// To test the identification of rules works.
+        //newRuleTree.getRule(Scene.v().forceResolve("tests.android.treetests.Eight",SootClass.HIERARCHY));
+
+        // Primarily to test the rule tree creation.
+//		dotDataForRuleTree dot = new dotDataForRuleTree();
+//		dot.getNodesAndEdges(newRuleHeir);
+//		dot.createDotFile();
 
 	}
 
