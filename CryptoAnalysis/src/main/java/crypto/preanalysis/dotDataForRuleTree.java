@@ -1,4 +1,4 @@
-package crypto.android;
+package crypto.preanalysis;
 
 import crypto.preanalysis.TreeNode;
 import crypto.preanalysis.TreeNodeData;
@@ -7,26 +7,26 @@ import java.util.AbstractMap;
 import java.util.HashMap;
 import java.util.Map;
 
-public class UIHierarchyData {
+public class dotDataForRuleTree {
     Map<String, String> nodes;
-    Map<String, Map.Entry<String,String>>  edges;
+    Map<String, Map.Entry<String, String>> edges;
 
-    public UIHierarchyData(){
+    public dotDataForRuleTree() {
         nodes = new HashMap<>();
         edges = new HashMap<>();
     }
 
-    public void getNodesAndEdges(TreeNode<TreeNodeData> root){
-        nodes.put(root.data.getSootClass().getName().replace(".",""), root.data.getSootClass().getName().replace(".",""));
+    public void getNodesAndEdges(TreeNode<TreeNodeData> root) {
+        nodes.put(root.data.getSootClass().getName().replace(".", ""), root.data.getSootClass().getName().replace(".", ""));
         for (TreeNode<TreeNodeData> child : root.children) {
-            nodes.put(child.data.getSootClass().getName().replace(".",""),child.data.getSootClass().getName().replace(".",""));
-            edges.put(root.data.getSootClass().getName().replace(".", "") + child.data.getSootClass().getName().replace(".", ""), new AbstractMap.SimpleEntry<String, String>(root.data.getSootClass().getName().replace(".", "") ,child.data.getSootClass().getName().replace(".", "")));
+            nodes.put(child.data.getSootClass().getName().replace(".", ""), child.data.getSootClass().getName().replace(".", ""));
+            edges.put(root.data.getSootClass().getName().replace(".", "") + child.data.getSootClass().getName().replace(".", ""), new AbstractMap.SimpleEntry<String, String>(root.data.getSootClass().getName().replace(".", ""), child.data.getSootClass().getName().replace(".", "")));
 
             getNodesAndEdges(child);
         }
     }
 
-    public void createDotFile(){
+    public void createDotFile() {
         StringBuilder builder = new StringBuilder();
         builder.append("digraph G { \n");
         builder.append(" rankdir=LR;\n");

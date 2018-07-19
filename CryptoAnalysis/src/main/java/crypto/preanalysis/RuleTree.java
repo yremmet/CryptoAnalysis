@@ -9,10 +9,10 @@ import java.util.*;
 
 public class RuleTree {
     private TreeNode<TreeNodeData> objectNode;
-    private Map<TreeNode<TreeNodeData>,Integer>  listOfSuperClasses; // Map<Node, Depth>
+    private Map<TreeNode<TreeNodeData>, Integer> listOfSuperClasses; // Map<Node, Depth>
 
     public TreeNode<TreeNodeData> createTree(List<ClassSpecification> specifications) {
-        if (specifications.size()>0){
+        if (specifications.size() > 0) {
             List<TreeNode<TreeNodeData>> listOfTreeNodes = new ArrayList<>();
 
             // This loop is needed to id the Object rule to avoid multiple apexes for the tree
@@ -26,14 +26,14 @@ public class RuleTree {
                 }
             }
 
-            if (objectNode != null){
+            if (objectNode != null) {
                 for (TreeNode<TreeNodeData> treeNode : listOfTreeNodes) {
                     insertNode(treeNode, objectNode);
                 }
             }
             return objectNode;
         }
-    return null;
+        return null;
     }
 
     public boolean insertNode(TreeNode<TreeNodeData> nodeUnderConsideration, TreeNode<TreeNodeData> rootNode) {
@@ -64,10 +64,10 @@ public class RuleTree {
 
                 // check the former siblings of the exchanged sub class, if they are sub classes to the new super class, add them as children.
                 for (TreeNode<TreeNodeData> child : parent.children) {
-                    if (child.data.getSootClass() != nodeUnderConsideration.data.getSootClass()){
+                    if (child.data.getSootClass() != nodeUnderConsideration.data.getSootClass()) {
                         if (Scene.v().getOrMakeFastHierarchy().isSubclass(child.data.getSootClass(), nodeUnderConsideration.data.getSootClass())) {
                             parent.children.remove(child);
-                            insertNode(child,nodeUnderConsideration);
+                            insertNode(child, nodeUnderConsideration);
                         }
                     }
 
@@ -98,14 +98,14 @@ public class RuleTree {
         return false;
     }
 
-    public ClassSpecification getRule(SootClass sootClass){
+    public ClassSpecification getRule(SootClass sootClass) {
         listOfSuperClasses = new HashMap<>();
 
         // Begin search from the root node.
-        getSuperClasses(objectNode,sootClass);
+        getSuperClasses(objectNode, sootClass);
 
         // Temp storage to hold the valid rule.
-        Map.Entry<TreeNode<TreeNodeData>, Integer> validRule = new AbstractMap.SimpleEntry<TreeNode<TreeNodeData>, Integer>(null,-1);
+        Map.Entry<TreeNode<TreeNodeData>, Integer> validRule = new AbstractMap.SimpleEntry<TreeNode<TreeNodeData>, Integer>(null, -1);
 
         for (Map.Entry<TreeNode<TreeNodeData>, Integer> treeNodeStringEntry : listOfSuperClasses.entrySet()) {
             if (validRule.getValue() < treeNodeStringEntry.getValue()) {
@@ -116,13 +116,13 @@ public class RuleTree {
         return validRule.getKey().data.getClassSpecification();
     }
 
-    private void getSuperClasses(TreeNode<TreeNodeData> node, SootClass sootClass){
-        if (sootClass.equals(node.data.getSootClass())){
-            listOfSuperClasses.put(node, node.getLevel());
-        } else if(Scene.v().getOrMakeFastHierarchy().isSubclass(sootClass, node.data.getSootClass())) {
-            listOfSuperClasses.put(node, node.getLevel());
+    private void getSuperClasses(TreeNode<TreeNodeData> node, SootClass sootClass) {
+        if (sootClass.equals(node.data.getSootClass())) {
+            listOfSuperClasses.put(node, node.getDepth());
+        } else if (Scene.v().getOrMakeFastHierarchy().isSubclass(sootClass, node.data.getSootClass())) {
+            listOfSuperClasses.put(node, node.getDepth());
             for (TreeNode<TreeNodeData> child : node.children) {
-                getSuperClasses(child,sootClass);
+                getSuperClasses(child, sootClass);
             }
         }
 

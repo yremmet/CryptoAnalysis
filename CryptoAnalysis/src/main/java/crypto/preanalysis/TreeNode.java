@@ -3,7 +3,7 @@ package crypto.preanalysis;
 import java.util.ArrayList;
 import java.util.List;
 
-public class TreeNode<T>{
+public class TreeNode<T> {
 
     public T data;
     public TreeNode<T> parent;
@@ -11,10 +11,6 @@ public class TreeNode<T>{
 
     public boolean isRoot() {
         return parent == null;
-    }
-
-    public boolean isLeaf() {
-        return children.size() == 0;
     }
 
     public TreeNode(T data) {
@@ -29,11 +25,13 @@ public class TreeNode<T>{
         return childNode;
     }
 
-    public int getLevel() {
-        if (this.isRoot())
+    public int getDepth() {
+        if (this.isRoot()) {
             return 0;
-        else
-            return parent.getLevel() + 1;
+        } else {
+            return parent.getDepth() + 1;
+        }
+
     }
 
 }
