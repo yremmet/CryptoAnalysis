@@ -18,13 +18,19 @@ public class TreeNode<T> {
         this.children = new ArrayList<>();
     }
 
-    public TreeNode<T> addChild(T child) {
+    /**
+     * @param child
+     */
+    public void addChild(T child) {
         TreeNode<T> childNode = new TreeNode<T>(child);
         childNode.parent = this;
         this.children.add(childNode);
-        return childNode;
     }
 
+    /**
+     * To id the correct rule to be returned
+     * @return
+     */
     public int getDepth() {
         if (this.isRoot()) {
             return 0;

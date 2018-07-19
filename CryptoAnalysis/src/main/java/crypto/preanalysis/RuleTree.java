@@ -8,9 +8,15 @@ import soot.SootClass;
 import java.util.*;
 
 public class RuleTree {
-    private TreeNode<TreeNodeData> objectNode;
+
+    private TreeNode<TreeNodeData> objectNode; // A single root node expected
     private Map<TreeNode<TreeNodeData>, Integer> listOfSuperClasses; // Map<Node, Depth>
 
+    /**
+     * Create a rule tree from the given ClassSpecifications
+     * @param specifications The specifications read from the CryptoScanner
+     * @return The rule tree
+     */
     public TreeNode<TreeNodeData> createTree(List<ClassSpecification> specifications) {
         if (specifications.size() > 0) {
             List<TreeNode<TreeNodeData>> listOfTreeNodes = new ArrayList<>();
@@ -36,7 +42,13 @@ public class RuleTree {
         return null;
     }
 
-    public boolean insertNode(TreeNode<TreeNodeData> nodeUnderConsideration, TreeNode<TreeNodeData> rootNode) {
+    /**
+     * Recursive insertion of a given rule node in the rule tree
+     * @param nodeUnderConsideration
+     * @param rootNode The current root node.
+     * @return Whether the insertion was successful
+     */
+    private boolean insertNode(TreeNode<TreeNodeData> nodeUnderConsideration, TreeNode<TreeNodeData> rootNode) {
         // Skip if the node under consideration and root node are the same.
         if (!nodeUnderConsideration.data.getSootClass().equals(rootNode.data.getSootClass())) {
             // Check if the node under consideration is a sub class of the current root node.
@@ -98,6 +110,11 @@ public class RuleTree {
         return false;
     }
 
+    /**
+     * Return the correct rule for the given soot class
+     * @param sootClass
+     * @return Correct rule
+     */
     public ClassSpecification getRule(SootClass sootClass) {
         listOfSuperClasses = new HashMap<>();
 
@@ -116,10 +133,18 @@ public class RuleTree {
         return validRule.getKey().data.getClassSpecification();
     }
 
+    /**
+     * Recursive traversal of the rule tree to id the correct rule for the given soot class
+     * @param node The current root node
+     * @param sootClass
+     */
     private void getSuperClasses(TreeNode<TreeNodeData> node, SootClass sootClass) {
+        // If the given soot class is the same as the one in the current node, this is the rule we are looking for.
+        // This should also mean this addition to the listOfSuperClasses should yield the deepest depth.
         if (sootClass.equals(node.data.getSootClass())) {
             listOfSuperClasses.put(node, node.getDepth());
-        } else if (Scene.v().getOrMakeFastHierarchy().isSubclass(sootClass, node.data.getSootClass())) {
+        } // If not, check if the given soot class is a sub class. If yes add to the listOfSuperClasses along with the depth, and delve further into the tree.
+        else if (Scene.v().getOrMakeFastHierarchy().isSubclass(sootClass, node.data.getSootClass())) {
             listOfSuperClasses.put(node, node.getDepth());
             for (TreeNode<TreeNodeData> child : node.children) {
                 getSuperClasses(child, sootClass);

@@ -7,6 +7,9 @@ import java.util.AbstractMap;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * For verifying the rule tree
+ */
 public class dotDataForRuleTree {
     Map<String, String> nodes;
     Map<String, Map.Entry<String, String>> edges;
@@ -16,6 +19,9 @@ public class dotDataForRuleTree {
         edges = new HashMap<>();
     }
 
+    /**
+     * @param root The root node for the rule tree
+     */
     public void getNodesAndEdges(TreeNode<TreeNodeData> root) {
         nodes.put(root.data.getSootClass().getName().replace(".", ""), root.data.getSootClass().getName().replace(".", ""));
         for (TreeNode<TreeNodeData> child : root.children) {
@@ -26,6 +32,9 @@ public class dotDataForRuleTree {
         }
     }
 
+    /**
+     * Generate the dot file data for the given rule tree
+     */
     public void createDotFile() {
         StringBuilder builder = new StringBuilder();
         builder.append("digraph G { \n");

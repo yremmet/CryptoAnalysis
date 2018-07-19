@@ -35,6 +35,11 @@ public class MockedUsagePatternTestingFramework extends UsagePatternTestingFrame
         return listOfMockedRules;
     }
 
+    /**
+     * Generate a mocked class for the given class name. mockito used for mocking.
+     * @param className
+     * @return The mocked class
+     */
     private CryptSLRule getMockedRule(String className){
         // Mocked class
         CryptSLRule mockedRule = mock(CryptSLRule.class);
@@ -84,15 +89,21 @@ public class MockedUsagePatternTestingFramework extends UsagePatternTestingFrame
                 if (!(param instanceof StringConstant))
                     continue;
                 StringConstant classesToMock = (StringConstant) param;
-                setClassesToMock(classesToMock.value.split(","));
+                setClassesToMock(classesToMock.value.replace(" ","").split(","));
             }
         }
     }
 
+    /**
+     * @return The list of classes from the benchmark method to be mocked
+     */
     public String[] getClassesToMock() {
         return classesToMock;
     }
 
+    /**
+     * @param classesToMock List of classes from the benchmark method to be mocked
+     */
     public void setClassesToMock(String[] classesToMock) {
         this.classesToMock = classesToMock;
     }
