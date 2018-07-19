@@ -5,17 +5,20 @@ import java.util.List;
 
 public class TreeNode<T> {
 
-    public T data;
-    public TreeNode<T> parent;
-    public List<TreeNode<T>> children;
+    private T data;
+    private TreeNode<T> parent;
+    private List<TreeNode<T>> children;
 
+    /**
+     * @return This node is a root if it does not have a parent
+     */
     public boolean isRoot() {
-        return parent == null;
+        return getParent() == null;
     }
 
     public TreeNode(T data) {
-        this.data = data;
-        this.children = new ArrayList<>();
+        setData(data);
+        setChildren(new ArrayList<>());
     }
 
     /**
@@ -23,8 +26,8 @@ public class TreeNode<T> {
      */
     public void addChild(T child) {
         TreeNode<T> childNode = new TreeNode<T>(child);
-        childNode.parent = this;
-        this.children.add(childNode);
+        childNode.setParent(this);
+        getChildren().add(childNode);
     }
 
     /**
@@ -35,9 +38,51 @@ public class TreeNode<T> {
         if (this.isRoot()) {
             return 0;
         } else {
-            return parent.getDepth() + 1;
+            return getParent().getDepth() + 1;
         }
 
+    }
+
+    /**
+     * @return The data associated to the node
+     */
+    public T getData() {
+        return data;
+    }
+
+    /**
+     * @param data
+     */
+    private void setData(T data) {
+        this.data = data;
+    }
+
+    /**
+     * @return the parent of this node
+     */
+    public TreeNode<T> getParent() {
+        return parent;
+    }
+
+    /**
+     * @param parent
+     */
+    private void setParent(TreeNode<T> parent) {
+        this.parent = parent;
+    }
+
+    /**
+     * @return Get a list of the children of this node
+     */
+    public List<TreeNode<T>> getChildren() {
+        return children;
+    }
+
+    /**
+     * @param children
+     */
+    private void setChildren(List<TreeNode<T>> children) {
+        this.children = children;
     }
 
 }

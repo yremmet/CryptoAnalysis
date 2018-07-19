@@ -23,7 +23,7 @@ public class MockedUsagePatternTestingFramework extends UsagePatternTestingFrame
     @Override
     protected List<CryptSLRule> getRules(){
 
-        if (classesToMock == null){
+        if (getClassesToMock() == null){
             return super.getRules();
         }
         List<CryptSLRule> listOfMockedRules = Lists.newArrayList();
