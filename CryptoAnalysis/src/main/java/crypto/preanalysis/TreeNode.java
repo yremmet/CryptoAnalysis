@@ -29,4 +29,11 @@ public class TreeNode<T>{
         return childNode;
     }
 
+    public int getLevel() {
+        if (this.isRoot())
+            return 0;
+        else
+            return parent.getLevel() + 1;
+    }
+
 }

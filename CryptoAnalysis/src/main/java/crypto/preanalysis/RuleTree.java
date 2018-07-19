@@ -8,10 +8,11 @@ import soot.SootClass;
 import java.util.*;
 
 public class RuleTree {
+    private TreeNode<TreeNodeData> objectNode;
+    private Map<TreeNode<TreeNodeData>,Integer>  listOfSuperClasses; // Map<Node, Depth>
 
     public TreeNode<TreeNodeData> createTree(List<ClassSpecification> specifications) {
         if (specifications.size()>0){
-            TreeNode<TreeNodeData> objectNode = null;
             List<TreeNode<TreeNodeData>> listOfTreeNodes = new ArrayList<>();
 
             // This loop is needed to id the Object rule to avoid multiple apexes for the tree
@@ -95,6 +96,36 @@ public class RuleTree {
 
         // Should be unreachable.
         return false;
+    }
+
+    public ClassSpecification getRule(SootClass sootClass){
+        listOfSuperClasses = new HashMap<>();
+
+        // Begin search from the root node.
+        getSuperClasses(objectNode,sootClass);
+
+        // Temp storage to hold the valid rule.
+        Map.Entry<TreeNode<TreeNodeData>, Integer> validRule = new AbstractMap.SimpleEntry<TreeNode<TreeNodeData>, Integer>(null,-1);
+
+        for (Map.Entry<TreeNode<TreeNodeData>, Integer> treeNodeStringEntry : listOfSuperClasses.entrySet()) {
+            if (validRule.getValue() < treeNodeStringEntry.getValue()) {
+                validRule = treeNodeStringEntry;
+            }
+        }
+
+        return validRule.getKey().data.getClassSpecification();
+    }
+
+    private void getSuperClasses(TreeNode<TreeNodeData> node, SootClass sootClass){
+        if (sootClass.equals(node.data.getSootClass())){
+            listOfSuperClasses.put(node, node.getLevel());
+        } else if(Scene.v().getOrMakeFastHierarchy().isSubclass(sootClass, node.data.getSootClass())) {
+            listOfSuperClasses.put(node, node.getLevel());
+            for (TreeNode<TreeNodeData> child : node.children) {
+                getSuperClasses(child,sootClass);
+            }
+        }
+
     }
 
 }
