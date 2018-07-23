@@ -9,7 +9,9 @@ import com.google.common.collect.Sets;
 import boomerang.WeightedForwardQuery;
 import boomerang.jimple.AllocVal;
 import boomerang.jimple.Statement;
+import crypto.analysis.ClassSpecification;
 import crypto.analysis.CryptoScanner;
+import crypto.preanalysis.RuleTree;
 import soot.*;
 import crypto.rules.CryptSLMethod;
 import soot.jimple.AssignStmt;
@@ -55,57 +57,8 @@ public class FiniteStateMachineToTypestateChangeFunction extends TypeStateMachin
 
 	@Override
 	public Collection<WeightedForwardQuery<TransitionFunction>> generateSeed(SootMethod method, Unit unit, Collection<SootMethod> optional) {
-		Set<WeightedForwardQuery<TransitionFunction>> out = new HashSet<>();
-		if(CryptoScanner.APPLICATION_CLASS_SEEDS_ONLY && !method.getDeclaringClass().isApplicationClass()){
-			return out;
-		}
-		if(fsm.seedIsConstructor()){
-			if(unit instanceof AssignStmt){
-				AssignStmt as = (AssignStmt) unit;
-				if(as.getRightOp() instanceof NewExpr){
-					NewExpr newExpr = (NewExpr) as.getRightOp();
-					Type type = newExpr.getType();
-
-					if(analyzedType.equals(type)){
-						AssignStmt stmt = (AssignStmt) unit;
-						out.add(createQuery(unit,method,new AllocVal(stmt.getLeftOp(), method, as.getRightOp(), new Statement(stmt, method))));
-					}
-                    SootClass classUnderConsideration = ((RefType)type).getSootClass();
-                    // it seems classes are sub-classes to themselves
-                    if(!(analyzedType.getSootClass().equals(((RefType)type).getSootClass())) &&  Scene.v().getFastHierarchy().isSubclass(classUnderConsideration,analyzedType.getSootClass())){
-                        //generate the current statement as a seed, because you want to track this object.
-                        AssignStmt stmt = (AssignStmt) unit;
-                        out.add(createQuery(unit,method,new AllocVal(stmt.getLeftOp(), method, as.getRightOp(), new Statement(stmt, method))));
-                    } else{
-                        //while(classUnderConsideration != null){
-                            //classUnderConsideration = ((RefType)type).getSootClass().getSuperclass();
-                            if(!(analyzedType.getSootClass().equals(((RefType)type).getSootClass())) &&  Scene.v().getFastHierarchy().isSubclass(classUnderConsideration,analyzedType.getSootClass())){
-                                //generate the current statement as a seed, because you want to track this object.
-                                AssignStmt stmt = (AssignStmt) unit;
-                                out.add(createQuery(unit,method,new AllocVal(stmt.getLeftOp(), method, as.getRightOp(), new Statement(stmt, method))));
-                                //break;
-                            }
-                        //}
-                    }
-                }
-			}
-		}
-		if (!(unit instanceof Stmt) || !((Stmt) unit).containsInvokeExpr())
-			return out;
-		InvokeExpr invokeExpr = ((Stmt) unit).getInvokeExpr();
-		SootMethod calledMethod = invokeExpr.getMethod();
-		if (!fsm.initialTransitonLabel().contains(calledMethod) || calledMethod.isConstructor())
-			return out;
-		if (calledMethod.isStatic()) {
-			if(unit instanceof AssignStmt){
-				AssignStmt stmt = (AssignStmt) unit;
-				out.add(createQuery(stmt,method,new AllocVal(stmt.getLeftOp(), method, stmt.getRightOp(), new Statement(stmt,method))));
-			}
-		} else if (invokeExpr instanceof InstanceInvokeExpr){
-			InstanceInvokeExpr iie = (InstanceInvokeExpr) invokeExpr;
-			out.add(createQuery(unit,method,new AllocVal(iie.getBase(), method,iie, new Statement((Stmt) unit,method))));
-		}
-		return out;
+		// Call to the overloaded method with the current class specification as null.
+		return generateSeed(method, unit, optional, null);
 	}
 
 	private WeightedForwardQuery<TransitionFunction> createQuery(Unit unit, SootMethod method, AllocVal allocVal) {
@@ -117,6 +70,62 @@ public class FiniteStateMachineToTypestateChangeFunction extends TypeStateMachin
 	protected State initialState() {
 		throw new RuntimeException("Should never be called!");
 	}
-	
-	
+
+    /**
+     * Overloaded method of the overridden generateSeed() method. The current class specification is required to identify
+     * the valid rule for the given allocation site.
+     * @param method
+     * @param unit
+     * @param optional
+     * @param currentSpecification The specification that is currently under consideration in the CryptoScanner loop.
+     * @return
+     */
+    public Collection<WeightedForwardQuery<TransitionFunction>> generateSeed(SootMethod method, Unit unit, Collection<SootMethod> optional, ClassSpecification currentSpecification) {
+        Set<WeightedForwardQuery<TransitionFunction>> out = new HashSet<>();
+        if(CryptoScanner.APPLICATION_CLASS_SEEDS_ONLY && !method.getDeclaringClass().isApplicationClass()){
+            return out;
+        }
+        if(fsm.seedIsConstructor()){
+            if(unit instanceof AssignStmt){
+                AssignStmt as = (AssignStmt) unit;
+                if(as.getRightOp() instanceof NewExpr){
+                    NewExpr newExpr = (NewExpr) as.getRightOp();
+                    Type type = newExpr.getType();
+
+                    if(analyzedType.equals(type)){
+                        AssignStmt stmt = (AssignStmt) unit;
+                        out.add(createQuery(unit,method,new AllocVal(stmt.getLeftOp(), method, as.getRightOp(), new Statement(stmt, method))));
+                    }
+                    else {
+                        // current specification can be null if the call to this method came from the overloaded method.
+                        if (currentSpecification != null){
+                            SootClass classUnderConsideration = ((RefType)type).getSootClass();
+                            // Check if the class specification under consideration is the same as the valid one for the
+                            // soot class under consideration.
+                            if (currentSpecification.equals(RuleTree.getRule(classUnderConsideration))){
+                                AssignStmt stmt = (AssignStmt) unit;
+                                out.add(createQuery(unit,method,new AllocVal(stmt.getLeftOp(), method, as.getRightOp(), new Statement(stmt, method))));
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        if (!(unit instanceof Stmt) || !((Stmt) unit).containsInvokeExpr())
+            return out;
+        InvokeExpr invokeExpr = ((Stmt) unit).getInvokeExpr();
+        SootMethod calledMethod = invokeExpr.getMethod();
+        if (!fsm.initialTransitonLabel().contains(calledMethod) || calledMethod.isConstructor())
+            return out;
+        if (calledMethod.isStatic()) {
+            if(unit instanceof AssignStmt){
+                AssignStmt stmt = (AssignStmt) unit;
+                out.add(createQuery(stmt,method,new AllocVal(stmt.getLeftOp(), method, stmt.getRightOp(), new Statement(stmt,method))));
+            }
+        } else if (invokeExpr instanceof InstanceInvokeExpr){
+            InstanceInvokeExpr iie = (InstanceInvokeExpr) invokeExpr;
+            out.add(createQuery(unit,method,new AllocVal(iie.getBase(), method,iie, new Statement((Stmt) unit,method))));
+        }
+        return out;
+    }
 }

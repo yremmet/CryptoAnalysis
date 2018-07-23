@@ -71,20 +71,6 @@ public abstract class CryptoScanner {
 		for (CryptSLRule rule : specs) {
 			specifications.add(new ClassSpecification(rule, this));
 		}
-
-		/*RuleTree ruleTree = new RuleTree(specifications);
-        TreeNode<ClassSpecification> ruleHeir = ruleTree.createTree();*/
-		RuleTree newRuleTree = new RuleTree();
-		TreeNode<TreeNodeData> newRuleHeir = newRuleTree.createTree(specifications);
-
-		// To test the identification of rules works.
-        //newRuleTree.getRule(Scene.v().forceResolve("tests.android.treetests.Eight",SootClass.HIERARCHY));
-
-        // Primarily to test the rule tree creation.
-//		dotDataForRuleTree dot = new dotDataForRuleTree();
-//		dot.getNodesAndEdges(newRuleHeir);
-//		dot.createDotFile();
-
 	}
 
 	
@@ -133,6 +119,8 @@ public abstract class CryptoScanner {
 	}
 
 	private void initialize() {
+        // This tree is required to identify the correct valid rule for a given soot class.
+        RuleTree.createTree(specifications);
 		for (ClassSpecification spec : getClassSpecifictions()) {
 			spec.checkForForbiddenMethods();
 			if (!isCommandLineMode() && !spec.isLeafRule())

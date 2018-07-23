@@ -65,7 +65,7 @@ public class ClassSpecification {
 	}
 
 	public Set<WeightedForwardQuery<TransitionFunction>> getInitialSeeds() {
-		return extendedIdealAnalysis.computeInitialSeeds();
+		return extendedIdealAnalysis.computeInitialSeeds(this);
 	}
 
 	@Override

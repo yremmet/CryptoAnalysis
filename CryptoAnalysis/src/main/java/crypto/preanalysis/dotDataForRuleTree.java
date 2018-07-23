@@ -23,7 +23,7 @@ public class dotDataForRuleTree {
     /**
      * @param root The root node for the rule tree
      */
-    public void getNodesAndEdges(TreeNode<TreeNodeData> root) {
+    private void getNodesAndEdges(TreeNode<TreeNodeData> root) {
         getNodes().put(root.getData().getSootClass().getName().replace(".", ""),
                 root.getData().getSootClass().getName().replace(".", ""));
         for (TreeNode<TreeNodeData> child : root.getChildren()) {
@@ -41,7 +41,9 @@ public class dotDataForRuleTree {
     /**
      * Generate the dot file data for the given rule tree
      */
-    public void createDotFile() {
+    public void createDotFile(TreeNode<TreeNodeData> root) {
+        getNodesAndEdges(root);
+
         StringBuilder builder = new StringBuilder();
         builder.append("digraph G { \n");
         builder.append(" rankdir=LR;\n");

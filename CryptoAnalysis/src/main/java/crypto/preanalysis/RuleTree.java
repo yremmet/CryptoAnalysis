@@ -7,17 +7,17 @@ import soot.SootClass;
 
 import java.util.*;
 
-public class RuleTree {
+public final class RuleTree {
 
-    private TreeNode<TreeNodeData> objectNode; // A single root node expected
-    private Map<TreeNode<TreeNodeData>, Integer> listOfSuperClasses; // Map<Node, Depth>
+    private static TreeNode<TreeNodeData> objectNode; // A single root node expected
+    private static Map<TreeNode<TreeNodeData>, Integer> listOfSuperClasses; // Map<Node, Depth>
 
     /**
      * Create a rule tree from the given ClassSpecifications
      * @param specifications The specifications read from the CryptoScanner
      * @return The rule tree
      */
-    public TreeNode<TreeNodeData> createTree(List<ClassSpecification> specifications) {
+    public static void createTree(List<ClassSpecification> specifications) {
         if (specifications.size() > 0) {
             List<TreeNode<TreeNodeData>> listOfTreeNodes = new ArrayList<>();
 
@@ -37,9 +37,11 @@ public class RuleTree {
                     insertNode(treeNode, getObjectNode());
                 }
             }
-            return getObjectNode();
         }
-        return null;
+
+        // Test verification
+        // dotDataForRuleTree dot = new dotDataForRuleTree();
+        // dot.createDotFile(RuleTree.objectNode);
     }
 
     /**
@@ -48,7 +50,7 @@ public class RuleTree {
      * @param rootNode The current root node.
      * @return Whether the insertion was successful
      */
-    private boolean insertNode(TreeNode<TreeNodeData> nodeUnderConsideration, TreeNode<TreeNodeData> rootNode) {
+    private static boolean insertNode(TreeNode<TreeNodeData> nodeUnderConsideration, TreeNode<TreeNodeData> rootNode) {
         // Skip if the node under consideration and root node are the same.
         if (!nodeUnderConsideration.getData().getSootClass().equals(rootNode.getData().getSootClass())) {
             // Check if the node under consideration is a sub class of the current root node.
@@ -115,7 +117,7 @@ public class RuleTree {
      * @param sootClass
      * @return Correct rule
      */
-    public ClassSpecification getRule(SootClass sootClass) {
+    public static ClassSpecification getRule(SootClass sootClass) {
         setListOfSuperClasses(new HashMap<>());
 
         // Begin search from the root node.
@@ -138,7 +140,7 @@ public class RuleTree {
      * @param node The current root node
      * @param sootClass
      */
-    private void getSuperClasses(TreeNode<TreeNodeData> node, SootClass sootClass) {
+    private static void getSuperClasses(TreeNode<TreeNodeData> node, SootClass sootClass) {
         // If the given soot class is the same as the one in the current node, this is the rule we are looking for.
         // This should also mean this addition to the listOfSuperClasses should yield the deepest depth.
         if (sootClass.equals(node.getData().getSootClass())) {
@@ -156,30 +158,30 @@ public class RuleTree {
     /**
      * @return The rule tree
      */
-    private TreeNode<TreeNodeData> getObjectNode() {
-        return objectNode;
+    private static TreeNode<TreeNodeData> getObjectNode() {
+        return RuleTree.objectNode;
     }
 
     /**
      * Set the root node for the rule tree
      * @param objectNode
      */
-    private void setObjectNode(TreeNode<TreeNodeData> objectNode) {
-        this.objectNode = objectNode;
+    private static void setObjectNode(TreeNode<TreeNodeData> objectNode) {
+        RuleTree.objectNode = objectNode;
     }
 
     /**
      * @return the list of super classes to the given soot class
      */
-    private Map<TreeNode<TreeNodeData>, Integer> getListOfSuperClasses() {
-        return listOfSuperClasses;
+    private static Map<TreeNode<TreeNodeData>, Integer> getListOfSuperClasses() {
+        return RuleTree.listOfSuperClasses;
     }
 
     /**
      * @param listOfSuperClasses
      */
-    private void setListOfSuperClasses(Map<TreeNode<TreeNodeData>, Integer> listOfSuperClasses) {
-        this.listOfSuperClasses = listOfSuperClasses;
+    private static void setListOfSuperClasses(Map<TreeNode<TreeNodeData>, Integer> listOfSuperClasses) {
+        RuleTree.listOfSuperClasses = listOfSuperClasses;
     }
 
 }

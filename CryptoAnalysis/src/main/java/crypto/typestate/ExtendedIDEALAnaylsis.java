@@ -15,6 +15,7 @@ import boomerang.debugger.Debugger;
 import boomerang.jimple.Statement;
 import boomerang.jimple.Val;
 import boomerang.results.ForwardBoomerangResults;
+import crypto.analysis.ClassSpecification;
 import crypto.analysis.CrySLResultsReporter;
 import crypto.analysis.IAnalysisSeed;
 import crypto.boomerang.CogniCryptBoomerangOptions;
@@ -108,26 +109,13 @@ public abstract class ExtendedIDEALAnaylsis {
 //	}
 
     public Set<WeightedForwardQuery<TransitionFunction>> computeInitialSeeds() {
-        Set<WeightedForwardQuery<TransitionFunction>> seeds = new HashSet<>();
-        ReachableMethods rm = Scene.v().getReachableMethods();
-        QueueReader<MethodOrMethodContext> listener = rm.listener();
-        while (listener.hasNext()) {
-            MethodOrMethodContext next = listener.next();
-            seeds.addAll(computeSeeds(next.method()));
-        }
-        return seeds;
+    	// Call to the overloaded method with the current class specification as null.
+        return computeInitialSeeds(null);
     }
 
     private Collection<WeightedForwardQuery<TransitionFunction>> computeSeeds(SootMethod method) {
-    	Collection<WeightedForwardQuery<TransitionFunction>> seeds = new HashSet<>();
-        if (!method.hasActiveBody())
-            return seeds;
-        for (Unit u : method.getActiveBody().getUnits()) {
-            Collection<SootMethod> calledMethods = (icfg().isCallStmt(u) ? icfg().getCalleesOfCallAt(u)
-                    : new HashSet<SootMethod>());
-            seeds.addAll( getOrCreateTypestateChangeFunction().generateSeed(method, u, calledMethods));
-        }
-        return seeds;
+    	// Call to the overloaded method with the current class specification as null.
+        return computeSeeds(method,null);
     }
 
 
@@ -147,6 +135,41 @@ public abstract class ExtendedIDEALAnaylsis {
 
 	public ForwardBoomerangResults<TransitionFunction> getResults() {
 		return results;
+	}
+
+
+	/**
+	 * Overloaded computeInitialSeeds() to be able to identify whether the current specification is valid.
+	 * @param currentSpecification The specification that is currently under consideration in the CryptoScanner loop.
+	 * @return
+	 */
+	public Set<WeightedForwardQuery<TransitionFunction>> computeInitialSeeds(ClassSpecification currentSpecification) {
+		Set<WeightedForwardQuery<TransitionFunction>> seeds = new HashSet<>();
+		ReachableMethods rm = Scene.v().getReachableMethods();
+		QueueReader<MethodOrMethodContext> listener = rm.listener();
+		while (listener.hasNext()) {
+			MethodOrMethodContext next = listener.next();
+			seeds.addAll(computeSeeds(next.method(),currentSpecification));
+		}
+		return seeds;
+	}
+
+	/**
+	 * Overloaded the computeSeeds() method to be able to identify whether the current specification is valid.
+	 * @param method
+	 * @param currentSpecification The specification that is currently under consideration in the CryptoScanner loop.
+	 * @return
+	 */
+	private Collection<WeightedForwardQuery<TransitionFunction>> computeSeeds(SootMethod method, ClassSpecification currentSpecification) {
+		Collection<WeightedForwardQuery<TransitionFunction>> seeds = new HashSet<>();
+		if (!method.hasActiveBody())
+			return seeds;
+		for (Unit u : method.getActiveBody().getUnits()) {
+			Collection<SootMethod> calledMethods = (icfg().isCallStmt(u) ? icfg().getCalleesOfCallAt(u)
+					: new HashSet<SootMethod>());
+			seeds.addAll( getOrCreateTypestateChangeFunction().generateSeed(method, u, calledMethods,currentSpecification));
+		}
+		return seeds;
 	}
 
 }
