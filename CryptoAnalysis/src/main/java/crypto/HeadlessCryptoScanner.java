@@ -323,6 +323,13 @@ public abstract class HeadlessCryptoScanner {
 		for(CryptSLRule r : rules) {
 			exList.add(Utils.getFullyQualifiedName(r));
 		}
+		exList.add("com.sun.*");
+		exList.add("sun.awt.*");
+		exList.add("javax.swing.*");
+		exList.add("javax.xml.*");
+		exList.add("org.w3c.*");
+		exList.add("sun.nio.*");
+		exList.add("java.awt.*");
 		return exList;
 	}
 
