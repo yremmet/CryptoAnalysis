@@ -7,3 +7,6 @@ AndroidZooAPIKey.txt
 AndroidZooApps/
 *.iml
 .idea/
+CryptoAnalysis/reportDir/
+CryptoAnalysis/cognicrypt-output/
+CryptoAnalysis/analysis-results/

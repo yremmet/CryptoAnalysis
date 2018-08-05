@@ -12,6 +12,7 @@ import boomerang.BackwardQuery;
 import boomerang.Query;
 import boomerang.jimple.Statement;
 import boomerang.jimple.Val;
+import boomerang.results.BackwardBoomerangResults;
 import boomerang.results.ForwardBoomerangResults;
 import crypto.analysis.errors.AbstractError;
 import crypto.extractparameter.CallSiteWithParamIndex;
@@ -20,6 +21,7 @@ import crypto.interfaces.ISLConstraint;
 import crypto.rules.CryptSLPredicate;
 import sync.pds.solver.nodes.Node;
 import typestate.TransitionFunction;
+import wpds.impl.Weight.NoWeight;
 
 public class CrySLResultsReporter  {
 
@@ -127,10 +129,10 @@ public class CrySLResultsReporter  {
 		}
 	}
 
-	public void boomerangQueryFinished(Query seed, BackwardQuery q) {
+	public void boomerangQueryFinished(Query seed, BackwardQuery q, BackwardBoomerangResults<NoWeight> res) {
 		for (ICrySLResultsListener listen : listeners) {
 			if (listen instanceof CrySLAnalysisListener) {
-				((CrySLAnalysisListener) listen).boomerangQueryFinished(seed, q);
+				((CrySLAnalysisListener) listen).boomerangQueryFinished(seed, q, res);
 			}
 		}
 	}
@@ -152,5 +154,6 @@ public class CrySLResultsReporter  {
 			listen.reportError(err);
 		}
 	}
+
 	
 }

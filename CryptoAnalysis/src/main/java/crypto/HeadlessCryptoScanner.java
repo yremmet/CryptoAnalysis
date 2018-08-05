@@ -59,6 +59,10 @@ public abstract class HeadlessCryptoScanner {
 		scanner.exec();
 	}
 
+	public String queryReportFile() {
+		return null;
+	}
+
 	public static HeadlessCryptoScanner createFromOptions(String... args) throws ParseException{
 		CommandLineParser parser = new DefaultParser();
 		options = parser.parse(new HeadlessCryptoScannerOptions(), args);
@@ -122,6 +126,12 @@ public abstract class HeadlessCryptoScanner {
 			protected boolean enableVisualization(){
 				return options.hasOption("visualization");
 			}
+
+			@Override
+			public String queryReportFile(){
+				return options.getOptionValue("queryReportFile");
+			}
+			
 		};
 		return sourceCryptoScanner;
 	}
@@ -232,6 +242,10 @@ public abstract class HeadlessCryptoScanner {
 					@Override
 					public boolean isCommandLineMode() {
 						return true;
+					}
+					@Override
+					public String getQueryReportFileName() {
+						return HeadlessCryptoScanner.this.queryReportFile();
 					}
 
 				};

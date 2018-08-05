@@ -166,4 +166,8 @@ public abstract class CryptoScanner {
 	public Collection<AnalysisSeedWithSpecification> getAnalysisSeeds() {
 		return this.seedsWithSpec.values();
 	}
+
+	public String getQueryReportFileName() {
+		return null;
+	}
 }

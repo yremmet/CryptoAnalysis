@@ -19,6 +19,7 @@ import boomerang.BackwardQuery;
 import boomerang.Query;
 import boomerang.jimple.Statement;
 import boomerang.jimple.Val;
+import boomerang.results.BackwardBoomerangResults;
 import boomerang.results.ForwardBoomerangResults;
 import crypto.Utils;
 import crypto.analysis.AnalysisSeedWithSpecification;
@@ -71,6 +72,7 @@ import test.assertions.TypestateErrorCountAssertion;
 import test.core.selfrunning.AbstractTestingFramework;
 import test.core.selfrunning.ImprecisionException;
 import typestate.TransitionFunction;
+import wpds.impl.Weight.NoWeight;
 
 public abstract class UsagePatternTestingFramework extends AbstractTestingFramework{
 
@@ -245,11 +247,6 @@ public abstract class UsagePatternTestingFramework extends AbstractTestingFramew
 								
 							}
 
-							@Override
-							public void boomerangQueryFinished(Query seed, BackwardQuery q) {
-								
-							}
-
 
 							@Override
 							public void checkedConstraints(AnalysisSeedWithSpecification analysisSeedWithSpecification,
@@ -295,6 +292,13 @@ public abstract class UsagePatternTestingFramework extends AbstractTestingFramew
 
 							@Override
 							public void onSeedTimeout(Node<Statement, Val> seed) {
+								
+							}
+
+							@Override
+							public void boomerangQueryFinished(Query seed, BackwardQuery q,
+									BackwardBoomerangResults<NoWeight> res) {
+								// TODO Auto-generated method stub
 								
 							}
 							

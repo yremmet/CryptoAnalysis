@@ -8,7 +8,9 @@ import boomerang.BackwardQuery;
 import boomerang.Query;
 import boomerang.jimple.Statement;
 import boomerang.jimple.Val;
+import boomerang.results.BackwardBoomerangResults;
 import crypto.rules.CryptSLPredicate;
+import wpds.impl.Weight.NoWeight;
 
 public interface ICrySLPerformanceListener {
 
@@ -28,7 +30,7 @@ public interface ICrySLPerformanceListener {
 
 	void boomerangQueryStarted(Query seed, BackwardQuery q);
 
-	void boomerangQueryFinished(Query seed, BackwardQuery q);
+	void boomerangQueryFinished(Query seed, BackwardQuery q, BackwardBoomerangResults<NoWeight> res);
 	
 	void ensuredPredicates(Table<Statement, Val, Set<EnsuredCryptSLPredicate>> existingPredicates, Table<Statement, IAnalysisSeed, Set<CryptSLPredicate>> expectedPredicates, Table<Statement, IAnalysisSeed, Set<CryptSLPredicate>> missingPredicates);
 

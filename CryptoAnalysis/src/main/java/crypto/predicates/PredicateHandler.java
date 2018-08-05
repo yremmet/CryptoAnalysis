@@ -102,7 +102,7 @@ public class PredicateHandler {
 				if (paramMatch) {
 					for (final ClassSpecification specification : cryptoScanner.getClassSpecifictions()) {
 						if (specification.getInvolvedMethods().contains(method)) {
-							Boomerang boomerang = new Boomerang(new CogniCryptBoomerangOptions() {
+							Boomerang boomerang = new Boomerang(new CogniCryptBoomerangOptions(cryptoScanner) {
 								@Override
 								public Optional<AllocVal> getAllocationVal(SootMethod m, Stmt stmt, Val fact,
 										BiDiInterproceduralCFG<Unit, SootMethod> icfg) {
@@ -129,7 +129,7 @@ public class PredicateHandler {
 							BackwardQuery backwardQuery = new BackwardQuery(statement, val);
 							cryptoScanner.getAnalysisListener().boomerangQueryStarted(seedObj, backwardQuery);
 							BackwardBoomerangResults<NoWeight> res = boomerang.solve(backwardQuery);
-							cryptoScanner.getAnalysisListener().boomerangQueryFinished(seedObj, backwardQuery);
+							cryptoScanner.getAnalysisListener().boomerangQueryFinished(seedObj, backwardQuery, res);
 							Map<ForwardQuery, PAutomaton<Statement, INode<Val>>> allocs = res.getAllocationSites();
 							for (ForwardQuery p : allocs.keySet()) {
 								AnalysisSeedWithSpecification seedWithSpec = cryptoScanner.getOrCreateSeedWithSpec(new AnalysisSeedWithSpecification(cryptoScanner, p.stmt(),p.var(),specification));

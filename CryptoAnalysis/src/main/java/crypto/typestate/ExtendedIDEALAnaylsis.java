@@ -16,6 +16,7 @@ import boomerang.jimple.Statement;
 import boomerang.jimple.Val;
 import boomerang.results.ForwardBoomerangResults;
 import crypto.analysis.CrySLResultsReporter;
+import crypto.analysis.CryptoScanner;
 import crypto.analysis.IAnalysisSeed;
 import crypto.boomerang.CogniCryptBoomerangOptions;
 import ideal.IDEALAnalysis;
@@ -38,7 +39,7 @@ public abstract class ExtendedIDEALAnaylsis {
 	private final IDEALAnalysis<TransitionFunction> analysis;
 	private ForwardBoomerangResults<TransitionFunction> results;
 	
-	public ExtendedIDEALAnaylsis(){
+	public ExtendedIDEALAnaylsis(CryptoScanner scanner){
 		analysis = new IDEALAnalysis<TransitionFunction>(new IDEALAnalysisDefinition<TransitionFunction>() {
 			@Override
 			public Collection<WeightedForwardQuery<TransitionFunction>> generate(SootMethod method, Unit stmt, Collection<SootMethod> calledMethod) {
@@ -66,7 +67,7 @@ public abstract class ExtendedIDEALAnaylsis {
 			}
 			@Override
 			public BoomerangOptions boomerangOptions() {
-				return new CogniCryptBoomerangOptions();
+				return new CogniCryptBoomerangOptions(scanner);
 			}
 		});
 	}

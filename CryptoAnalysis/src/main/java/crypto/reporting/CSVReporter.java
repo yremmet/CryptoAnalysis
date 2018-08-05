@@ -25,6 +25,7 @@ import boomerang.BackwardQuery;
 import boomerang.Query;
 import boomerang.jimple.Statement;
 import boomerang.jimple.Val;
+import boomerang.results.BackwardBoomerangResults;
 import boomerang.results.ForwardBoomerangResults;
 import crypto.analysis.AnalysisSeedWithSpecification;
 import crypto.analysis.CrySLAnalysisListener;
@@ -49,6 +50,7 @@ import soot.jimple.toolkits.callgraph.ReachableMethods;
 import soot.util.queue.QueueReader;
 import sync.pds.solver.nodes.Node;
 import typestate.TransitionFunction;
+import wpds.impl.Weight.NoWeight;
 
 public class CSVReporter extends CrySLAnalysisListener {
 
@@ -61,9 +63,12 @@ public class CSVReporter extends CrySLAnalysisListener {
 	private Set<SootMethod> dataflowReachableMethods = Sets.newHashSet();
 	private Stopwatch analysisTime = Stopwatch.createUnstarted();
 	private String csvReportFileName;
+	private int seedTimeouts;
+	private int boomerangQueries;
+	private int boomerangTimeouts;
 	private enum Headers{
 		SoftwareID,SeedObjectCount,CallGraphTime_ms,CryptoAnalysisTime_ms,CallGraphReachableMethods,
-		CallGraphReachableMethods_ActiveBodies,DataflowVisitedMethod
+		CallGraphReachableMethods_ActiveBodies,DataflowVisitedMethod, Timeouts, BoomerangQueries, Timeouts_BoomerangQueries
 	}
 
 	public CSVReporter(String csvReportFileName, String softwareId,  List<CryptSLRule> rules, long callGraphConstructionTime) {
@@ -114,7 +119,9 @@ public class CSVReporter extends CrySLAnalysisListener {
 		put(Headers.DataflowVisitedMethod, dataflowReachableMethods.size());
 		put(Headers.CryptoAnalysisTime_ms, analysisTime.elapsed(TimeUnit.MILLISECONDS));
 		put(Headers.SeedObjectCount, seeds);
-		
+		put(Headers.Timeouts, seedTimeouts);
+		put(Headers.BoomerangQueries, boomerangQueries);
+		put(Headers.Timeouts_BoomerangQueries, boomerangTimeouts);
 		Table<Class, CryptSLRule, Integer> errorTable = HashBasedTable.create(); 
 		for(AbstractError err : errors){
 			Integer integer = errorTable.get(err.getClass(), err.getRule());
@@ -216,11 +223,14 @@ public class CSVReporter extends CrySLAnalysisListener {
 
 	@Override
 	public void boomerangQueryStarted(Query seed, BackwardQuery q) {
+		boomerangQueries++;
 	}
 
 	@Override
-	public void boomerangQueryFinished(Query seed, BackwardQuery q) {
-		
+	public void boomerangQueryFinished(Query seed, BackwardQuery q, BackwardBoomerangResults<NoWeight> res) {
+		if(res.isTimedout()) {
+			boomerangTimeouts +=1; 
+		}
 	}
 
 	@Override
@@ -242,7 +252,7 @@ public class CSVReporter extends CrySLAnalysisListener {
 
 	@Override
 	public void onSeedTimeout(Node<Statement, Val> seed) {
-		
+		seedTimeouts++;
 	}
 
 	@Override

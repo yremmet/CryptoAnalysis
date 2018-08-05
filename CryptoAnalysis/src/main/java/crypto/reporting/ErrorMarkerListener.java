@@ -15,6 +15,7 @@ import boomerang.BackwardQuery;
 import boomerang.Query;
 import boomerang.jimple.Statement;
 import boomerang.jimple.Val;
+import boomerang.results.BackwardBoomerangResults;
 import boomerang.results.ForwardBoomerangResults;
 import crypto.analysis.AnalysisSeedWithSpecification;
 import crypto.analysis.CrySLAnalysisListener;
@@ -38,6 +39,7 @@ import soot.SootClass;
 import soot.SootMethod;
 import sync.pds.solver.nodes.Node;
 import typestate.TransitionFunction;
+import wpds.impl.Weight.NoWeight;
 
 /**
  * This listener is notified of any misuses the analysis finds.
@@ -150,8 +152,9 @@ public class ErrorMarkerListener extends CrySLAnalysisListener {
 	}
 
 	@Override
-	public void boomerangQueryFinished(final Query arg0, final BackwardQuery arg1) {
-		// Nothing
+	public void boomerangQueryFinished(Query seed, BackwardQuery q, BackwardBoomerangResults<NoWeight> res) {
+		// TODO Auto-generated method stub
+		
 	}
 
 	@Override

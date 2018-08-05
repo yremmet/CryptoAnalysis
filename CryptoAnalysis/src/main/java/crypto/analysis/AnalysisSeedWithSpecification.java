@@ -81,7 +81,7 @@ public class AnalysisSeedWithSpecification extends IAnalysisSeed {
 			ClassSpecification spec) {
 		super(cryptoScanner, stmt, val, spec.getFSM().getInitialWeight(stmt));
 		this.spec = spec;
-		analysis = new ExtendedIDEALAnaylsis() {
+		analysis = new ExtendedIDEALAnaylsis(cryptoScanner) {
 
 			@Override
 			public SootBasedStateMachineGraph getStateMachine() {

@@ -37,7 +37,7 @@ public class ClassSpecification {
 		this.cryptSLRule = rule;
 		this.cryptoScanner = cScanner;
 		this.fsm = new SootBasedStateMachineGraph(rule.getUsagePattern());
-		this.extendedIdealAnalysis = new ExtendedIDEALAnaylsis() {
+		this.extendedIdealAnalysis = new ExtendedIDEALAnaylsis(cryptoScanner) {
 			@Override
 			public SootBasedStateMachineGraph getStateMachine() {
 				return fsm;

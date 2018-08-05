@@ -46,7 +46,7 @@ public abstract class IDEALCrossingTestingFramework extends AbstractTestingFrame
 	protected abstract File getCryptSLFile();
 
 	protected ExtendedIDEALAnaylsis createAnalysis() {
-		return new ExtendedIDEALAnaylsis() {
+		return new ExtendedIDEALAnaylsis(null) {
 			
 			@Override
 			protected BiDiInterproceduralCFG<Unit, SootMethod> icfg() {

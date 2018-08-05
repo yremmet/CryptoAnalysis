@@ -56,7 +56,7 @@ public class AnalysisSeedWithEnsuredPredicate extends IAnalysisSeed{
 
 
 	private ExtendedIDEALAnaylsis getOrCreateAnalysis() {
-		problem = new ExtendedIDEALAnaylsis() {
+		problem = new ExtendedIDEALAnaylsis(cryptoScanner) {
 			
 			@Override
 			protected BiDiInterproceduralCFG<Unit, SootMethod> icfg() {

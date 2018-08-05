@@ -16,6 +16,7 @@ import boomerang.BackwardQuery;
 import boomerang.Query;
 import boomerang.jimple.Statement;
 import boomerang.jimple.Val;
+import boomerang.results.BackwardBoomerangResults;
 import boomerang.results.ForwardBoomerangResults;
 import crypto.HeadlessCryptoScanner;
 import crypto.analysis.AnalysisSeedWithSpecification;
@@ -36,6 +37,7 @@ import crypto.rules.CryptSLPredicate;
 import sync.pds.solver.nodes.Node;
 import test.IDEALCrossingTestingFramework;
 import typestate.TransitionFunction;
+import wpds.impl.Weight.NoWeight;
 
 public class HeadlessTests {
 	
@@ -252,10 +254,6 @@ public class HeadlessTests {
 			public void boomerangQueryStarted(Query seed, BackwardQuery q) {
 			}
 
-			@Override
-			public void boomerangQueryFinished(Query seed, BackwardQuery q) {
-
-			}
 
 			@Override
 			public void beforePredicateCheck(AnalysisSeedWithSpecification analysisSeedWithSpecification) {
@@ -279,6 +277,12 @@ public class HeadlessTests {
 
 			@Override
 			public void afterAnalysis() {
+			}
+
+			@Override
+			public void boomerangQueryFinished(Query seed, BackwardQuery q, BackwardBoomerangResults<NoWeight> res) {
+				// TODO Auto-generated method stub
+				
 			}
 		};
 	}

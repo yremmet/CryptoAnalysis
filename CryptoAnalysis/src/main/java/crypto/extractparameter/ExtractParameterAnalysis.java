@@ -149,15 +149,13 @@ public class ExtractParameterAnalysis {
 		private BackwardBoomerangResults<NoWeight> res;
 
 		public void solve() {
-			Boomerang boomerang = new Boomerang(new CogniCryptIntAndStringBoomerangOptions()) {
+			Boomerang boomerang = new Boomerang(new CogniCryptIntAndStringBoomerangOptions(cryptoScanner)) {
 				@Override
 				public BiDiInterproceduralCFG<Unit, SootMethod> icfg() {
 					return ExtractParameterAnalysis.this.cryptoScanner.icfg();
 				}
 			};
 			res = boomerang.solve(this);
-			boomerang.debugOutput();
-			// log("Solving query "+ accessGraph + " @ " + stmt);
 			for (QueryListener l : Lists.newLinkedList(listeners)) {
 				l.solved(this, res);
 			}
